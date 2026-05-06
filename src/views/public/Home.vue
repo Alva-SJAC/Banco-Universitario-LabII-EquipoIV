@@ -38,19 +38,17 @@
     </section>
 
     <!-- Pie de página -->
-    <div id="contacto" class="py-12 bg-bu-navy-deep text-white/50 text-center border-t border-white/10 italic">
-      Información de contacto y enlaces
-    </div>
+    <Footer />
 
     <!-- Botón de acceso rápido -->
-    <div class="fixed bottom-8 right-8 w-16 h-16 bg-bu-teal rounded-full shadow-lg flex items-center justify-center text-white italic text-[10px]">
-      ACCESO
-    </div>
+    <FloatingBancaBtn />
   </main>
 </template>
 
 <script setup>
 import Navbar from '../../components/layout/Navbar.vue'
+import Footer from '../../components/layout/Footer.vue'
+import FloatingBancaBtn from '../../components/layout/FloatingBancaBtn.vue'
 /* Los componentes se importarán aquí */
 </script>
 
