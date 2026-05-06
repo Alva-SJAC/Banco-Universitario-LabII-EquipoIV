@@ -1,9 +1,7 @@
 <template>
   <main class="landing-page">
     <!-- Navegación -->
-    <div class="h-20 bg-gray-100 flex items-center justify-center border-b italic text-gray-400">
-      Barra de navegación
-    </div>
+    <Navbar />
 
     <!-- Sección de inicio -->
     <section id="inicio" class="h-[600px] bg-bu-navy-deep flex items-center justify-center text-white">
@@ -40,7 +38,7 @@
     </section>
 
     <!-- Pie de página -->
-    <div class="py-12 bg-bu-navy-deep text-white/50 text-center border-t border-white/10 italic">
+    <div id="contacto" class="py-12 bg-bu-navy-deep text-white/50 text-center border-t border-white/10 italic">
       Información de contacto y enlaces
     </div>
 
@@ -52,6 +50,7 @@
 </template>
 
 <script setup>
+import Navbar from '../../components/layout/Navbar.vue'
 /* Los componentes se importarán aquí */
 </script>
 
