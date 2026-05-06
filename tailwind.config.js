@@ -7,11 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        'bu-teal': '#4EC9C2',
-        'bu-teal-dark': '#3ab3ac',
+        'bu-teal': '#49beb7',
+        'bu-teal-dark': '#085f63',
         'bu-navy': '#1A6B7C',
         'bu-navy-deep': '#0f4a58',
-        'bu-offwhite': '#F4FAFA',
+        'bu-offwhite': '#f8fafc',
       },
       fontFamily: {
         'montserrat': ['"Montserrat Alternates"', 'sans-serif'],
