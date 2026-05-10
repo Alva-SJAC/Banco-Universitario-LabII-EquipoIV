@@ -1,21 +1,23 @@
 # Banco Universitario - Frontend
 
-Este repositorio contiene el código cliente (Frontend) para la plataforma web del "Banco Universitario", un proyecto desarrollado para el Decanato de Ciencias y Tecnología. 
+Este repositorio contiene el código cliente (Frontend) para la plataforma web del "Banco Universitario", un proyecto desarrollado para el Decanato de Ciencias y Tecnología.
 
 La solución se divide en dos componentes principales: el **Sitio Web Institucional** (informativo) y la **Banca en Línea** (transaccional).
 
 ## Stack Tecnológico
 
 El proyecto utiliza las siguientes tecnologías y librerías:
-* **Vue.js:** Framework principal para la reactividad y manejo de componentes dinámicos.
-* **Tailwind CSS:** Para el diseño responsive y estilos personalizados de la web institucional.
-* **Bootstrap:** Para la implementación rápida de componentes de interfaz (modales, tablas).
-* **Axios:** Cliente HTTP para el consumo de la API RESTful y manejo de JSON Web Tokens (JWT).
-* **jsPDF:** Librería para la generación y descarga de comprobantes de pago en el navegador.
+
+- **Vue.js:** Framework principal para la reactividad y manejo de componentes dinámicos.
+- **Tailwind CSS:** Para el diseño responsive y estilos personalizados de la web institucional.
+- **Bootstrap:** Para la implementación rápida de componentes de interfaz (modales, tablas).
+- **Axios:** Cliente HTTP para el consumo de la API RESTful y manejo de JSON Web Tokens (JWT).
+- **jsPDF:** Librería para la generación y descarga de comprobantes de pago en el navegador.
 
 ## Arquitectura del Proyecto
 
 El proyecto sigue una estructura modular orientada a separar la lógica de negocio (servicios y utilidades) de la capa de presentación (vistas y componentes). **No existe una carpeta backend**, ya que toda la comunicación con el servidor se maneja de forma asíncrona a través de `/services`.
+
 ```text
 /banco-universitario-frontend
 ├── /public                     # Archivos estáticos base (index.html, favicon)
@@ -55,7 +57,7 @@ El proyecto sigue una estructura modular orientada a separar la lógica de negoc
     └── /utils                  # Funciones de ayuda independientes
         ├── validators.js       # Validación de cuentas (20 dígitos), montos y correos
         └── pdfGenerator.js     # Lógica centralizada para exportar recibos con jsPDF
-        
+
 ## Flujo de Trabajo en Git
 
 Para **mantener el orden en el repositorio, evitar conflictos de código y facilitar la revisión, todo el equipo debe seguir el siguiente estándar para la creación de ramas y el registro de cambios (commits).
@@ -81,3 +83,4 @@ Los mensajes de commit deben ser claros, concisos y explicar qué se hizo en el 
 * `docs`: Para agregar o modificar documentación.
 * `refactor`: Para optimizar o reestructurar código existente sin alterar su comportamiento final.
 * `chore`: Para tareas de configuración del proyecto, instalación de dependencias o ajustes en las herramientas de compilación.
+```
