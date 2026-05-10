@@ -1,12 +1,13 @@
 <template>
   <section id="nosotros" class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Título de la sección -->
-      <div class="text-center mb-12">
-        <h3 class="text-bu-teal font-semibold tracking-widest uppercase text-xs mb-3">QUIÉNES SOMOS</h3>
-        <div class="w-12 h-0.5 bg-bu-teal mx-auto"></div>
-      </div>
       
+      <!-- Título de la sección centrado -->
+      <div class="text-center mb-12">
+        <h3 class="font-bold tracking-[0.2em] uppercase text-sm mb-3 bg-gradient-to-r from-[#3b9f9a] to-[#51cec8] bg-clip-text text-transparent inline-block">QUIÉNES SOMOS</h3>
+        <div class="w-12 h-1 bg-gradient-to-r from-[#3b9f9a] to-[#51cec8] rounded-full mx-auto"></div>
+      </div>
+
       <!-- Contenedor principal para la imagen y el texto -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <!-- Espacio para la imagen y el badge -->
