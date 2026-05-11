@@ -21,18 +21,12 @@
           class="bg-white rounded-[2rem] p-8 md:p-10 w-full max-w-[380px] flex flex-col shadow-sm hover:shadow-2xl hover:shadow-bu-teal/20 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden"
         >
           <!-- Expanding Top Border (Aparece desde el centro) -->
-          <div class="absolute top-0 left-1/2 -translate-x-1/2 h-1.5 bg-bu-teal-dark transition-all duration-500 ease-out w-0 group-hover:w-full"></div>
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 h-1.5 bg-bu-teal transition-all duration-500 ease-out w-0 group-hover:w-full"></div>
 
           <!-- Icon Container -->
-          <div class="relative w-16 h-16 mb-8 flex-shrink-0">
-             <!-- Default background -->
-             <div class="absolute inset-0 rounded-2xl bg-bu-teal/10 transition-opacity duration-500 group-hover:opacity-0"></div>
-             
-             <!-- Hover gradient background (Usa colores corporativos) -->
-             <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-bu-teal-dark to-bu-navy-deep opacity-0 transition-opacity duration-500 group-hover:opacity-100 shadow-lg"></div>
-             
+          <div class="relative w-16 h-16 mb-8 flex-shrink-0 icon-bg-container rounded-2xl flex items-center justify-center shadow-sm">
              <!-- Dynamically render the SVG based on service.icon -->
-             <div class="absolute inset-0 flex items-center justify-center z-10 transform transition-transform duration-500 group-hover:scale-110">
+             <div class="z-10 transform transition-transform duration-500 group-hover:scale-110">
                <template v-if="service.icon === 'transfer'">
                   <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
@@ -134,3 +128,15 @@ const services = ref([
   }
 ]);
 </script>
+
+<style scoped>
+.icon-bg-container {
+  background-color: rgba(73, 190, 183, 0.1);
+  transition: all 0.5s ease;
+}
+
+.group:hover .icon-bg-container {
+  background: linear-gradient(to bottom right, #49beb7, #085f63);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+</style>
