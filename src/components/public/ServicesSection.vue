@@ -18,40 +18,42 @@
         <div 
           v-for="service in services" 
           :key="service.id"
-          class="bg-white rounded-[2rem] p-8 md:p-10 w-full max-w-[380px] flex flex-col shadow-sm hover:shadow-2xl hover:shadow-bu-teal/20 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden"
+          :data-id="service.id"
+          class="bg-white rounded-[2rem] p-8 md:p-10 w-full max-w-[380px] flex flex-col shadow-sm hover:shadow-2xl hover:shadow-bu-teal/20 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden service-card max-md:[&.is-active]:shadow-2xl max-md:[&.is-active]:shadow-bu-teal/20 max-md:[&.is-active]:-translate-y-2"
+          :class="{ 'is-active': activeCardId === service.id }"
         >
           <!-- Expanding Top Border (Aparece desde el centro) -->
-          <div class="absolute top-0 left-1/2 -translate-x-1/2 h-1.5 bg-bu-teal transition-all duration-500 ease-out w-0 group-hover:w-full"></div>
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 h-1.5 bg-bu-teal transition-all duration-500 ease-out w-0 group-hover:w-full max-md:group-[.is-active]:w-full"></div>
 
           <!-- Icon Container -->
           <div class="relative w-16 h-16 mb-8 flex-shrink-0 icon-bg-container rounded-2xl flex items-center justify-center shadow-sm">
              <!-- Dynamically render the SVG based on service.icon -->
-             <div class="z-10 transform transition-transform duration-500 group-hover:scale-110">
+             <div class="z-10 transform transition-transform duration-500 group-hover:scale-110 max-md:group-[.is-active]:scale-110">
                <template v-if="service.icon === 'transfer'">
-                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white max-md:group-[.is-active]:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                   </svg>
                </template>
                <template v-else-if="service.icon === 'deposit'">
-                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white max-md:group-[.is-active]:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14a2 2 0 100-4 2 2 0 000 4z"></path>
                   </svg>
                </template>
                <template v-else-if="service.icon === 'withdrawal'">
-                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white max-md:group-[.is-active]:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 10h3v4h-3z"></path>
                   </svg>
                </template>
                <template v-else-if="service.icon === 'tuition'">
-                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white max-md:group-[.is-active]:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5L3 9l9 4.5L21 9l-9-4.5z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.5 10.25v4.5C5.5 16 8.5 18 12 18s6.5-2 6.5-3.25v-4.5"></path>
                   </svg>
                </template>
                <template v-else-if="service.icon === 'scholarship'">
-                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white max-md:group-[.is-active]:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 13a4 4 0 100-8 4 4 0 000 8z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 12.5l-2 7 4-2 4 2-2-7"></path>
                   </svg>
@@ -88,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const services = ref([
   {
@@ -127,6 +129,54 @@ const services = ref([
     icon: 'scholarship'
   }
 ]);
+
+const activeCardId = ref(null);
+let observer = null;
+
+onMounted(() => {
+  const options = {
+    root: null,
+    rootMargin: '-45% 0px -45% 0px', // Trigger when card is very close to the center (middle 10% of the screen)
+    threshold: 0
+  };
+
+  const intersectingIds = new Set();
+
+  observer = new IntersectionObserver((entries) => {
+    // Only apply hover effects automatically on mobile screens (max-width: 767px)
+    if (window.innerWidth >= 768) {
+      activeCardId.value = null;
+      return;
+    }
+
+    entries.forEach(entry => {
+      const id = parseInt(entry.target.getAttribute('data-id'));
+      if (entry.isIntersecting) {
+        intersectingIds.add(id);
+      } else {
+        intersectingIds.delete(id);
+      }
+    });
+
+    if (intersectingIds.size > 0) {
+      // Pick the first intersecting card
+      activeCardId.value = Array.from(intersectingIds)[0];
+    } else {
+      activeCardId.value = null;
+    }
+  }, options);
+
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.service-card');
+    cards.forEach(card => observer.observe(card));
+  }, 100);
+});
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect();
+  }
+});
 </script>
 
 <style scoped>
@@ -138,5 +188,12 @@ const services = ref([
 .group:hover .icon-bg-container {
   background: linear-gradient(to bottom right, #49beb7, #085f63);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 767px) {
+  .group.is-active .icon-bg-container {
+    background: linear-gradient(to bottom right, #49beb7, #085f63);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
 }
 </style>

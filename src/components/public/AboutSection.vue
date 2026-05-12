@@ -16,7 +16,7 @@
           <img src="../../assets/img/AboutUs.png" alt="Equipo de trabajo del Banco Universitario" class="w-full h-full object-cover rounded-[2rem] shadow-lg" />
           
           <!-- Badge flotante -->
-          <div class="absolute bottom-8 -left-4 sm:left-8 bg-white rounded-3xl py-4 px-6 shadow-2xl flex items-center space-x-4 border border-gray-50">
+          <div class="absolute bottom-8 -left-4 sm:left-8 bg-white rounded-3xl py-4 px-6 shadow-2xl hidden md:flex items-center space-x-4 border border-gray-50">
             <div class="w-12 h-12 bg-[#2b8682] rounded-xl flex items-center justify-center text-white shadow-sm">
               <!-- Icono de casa relleno (solid) -->
               <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.99 9a.75.75 0 11-1.06 1.06l-1.46-1.46V20a2 2 0 01-2 2h-3a2 2 0 01-2-2v-4h-2v4a2 2 0 01-2 2h-3a2 2 0 01-2-2v-7.56l-1.46 1.46a.75.75 0 01-1.06-1.06l8.99-9z"></path></svg>
