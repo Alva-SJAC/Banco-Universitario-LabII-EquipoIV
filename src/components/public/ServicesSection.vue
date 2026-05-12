@@ -1,7 +1,7 @@
 <template>
   <section id="productos" class="py-24 bg-bu-offwhite relative">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Encabezado de la sección -->
+      <!-- Section heading -->
       <div class="text-center mb-16">
         <h3 class="text-bu-teal font-semibold tracking-[0.2em] uppercase text-sm mb-4">PRODUCTOS Y SERVICIOS</h3>
         <div class="w-12 h-1 bg-bu-teal mx-auto mb-8 rounded-full"></div>
@@ -13,21 +13,20 @@
         </p>
       </div>
 
-      <!-- Grid de tarjetas de servicios -->
+      <!-- Service card grid -->
       <div class="flex flex-wrap justify-center gap-8 max-w-7xl mx-auto">
         <div 
           v-for="service in services" 
           :key="service.id"
           :data-id="service.id"
-          class="bg-white rounded-[2rem] p-8 md:p-10 w-full max-w-[380px] flex flex-col shadow-sm hover:shadow-2xl hover:shadow-bu-teal/20 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden service-card max-md:[&.is-active]:shadow-2xl max-md:[&.is-active]:shadow-bu-teal/20 max-md:[&.is-active]:-translate-y-2"
+          class="bg-white rounded-[2rem] p-8 md:p-10 w-full max-w-[380px] flex flex-col shadow-sm hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden service-card max-md:[&.is-active]:-translate-y-2"
           :class="{ 'is-active': activeCardId === service.id }"
         >
-          <!-- Expanding Top Border (Aparece desde el centro) -->
-          <div class="absolute top-0 left-1/2 -translate-x-1/2 h-1.5 bg-bu-teal transition-all duration-500 ease-out w-0 group-hover:w-full max-md:group-[.is-active]:w-full"></div>
+          <!-- Expanding Top Border -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 h-1.5 bg-gradient-to-r from-bu-teal to-bu-teal-dark transition-all duration-500 ease-out w-0 group-hover:w-full max-md:group-[.is-active]:w-full"></div>
 
           <!-- Icon Container -->
           <div class="relative w-16 h-16 mb-8 flex-shrink-0 icon-bg-container rounded-2xl flex items-center justify-center shadow-sm">
-             <!-- Dynamically render the SVG based on service.icon -->
              <div class="z-10 transform transition-transform duration-500 group-hover:scale-110 max-md:group-[.is-active]:scale-110">
                <template v-if="service.icon === 'transfer'">
                   <svg class="w-8 h-8 transition-colors duration-500 group-hover:text-white max-md:group-[.is-active]:text-white text-bu-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,14 +135,13 @@ let observer = null;
 onMounted(() => {
   const options = {
     root: null,
-    rootMargin: '-45% 0px -45% 0px', // Trigger when card is very close to the center (middle 10% of the screen)
+    rootMargin: '-45% 0px -45% 0px', 
     threshold: 0
   };
 
   const intersectingIds = new Set();
 
   observer = new IntersectionObserver((entries) => {
-    // Only apply hover effects automatically on mobile screens (max-width: 767px)
     if (window.innerWidth >= 768) {
       activeCardId.value = null;
       return;
@@ -159,7 +157,6 @@ onMounted(() => {
     });
 
     if (intersectingIds.size > 0) {
-      // Pick the first intersecting card
       activeCardId.value = Array.from(intersectingIds)[0];
     } else {
       activeCardId.value = null;
@@ -190,10 +187,18 @@ onUnmounted(() => {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
+.group:hover {
+  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.15) !important;
+}
+
 @media (max-width: 767px) {
   .group.is-active .icon-bg-container {
     background: linear-gradient(to bottom right, #49beb7, #085f63);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .group.is-active {
+    box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.15) !important;
   }
 }
 </style>
