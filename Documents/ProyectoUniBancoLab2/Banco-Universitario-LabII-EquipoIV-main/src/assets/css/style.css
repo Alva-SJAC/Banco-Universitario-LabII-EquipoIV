@@ -1,0 +1,26 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-montserrat text-bu-navy-deep antialiased;
+}
+
+/* Clases de utilidad personalizadas para el proyecto */
+.bu-gradient {
+  background: linear-gradient(135deg, #4EC9C2 0%, #1A6B7C 100%);
+}
+
+.bu-section {
+  @apply py-16 md:py-24;
+}
+
+.bu-container {
+  @apply container mx-auto px-4;
+}
