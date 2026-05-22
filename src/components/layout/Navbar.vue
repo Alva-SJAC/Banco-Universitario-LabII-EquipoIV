@@ -6,12 +6,10 @@
     ]"
   >
     <div class="bu-container flex items-center justify-between">
-      <!-- Logo -->
       <router-link to="/" class="no-underline">
         <BancoLogo />
       </router-link>
 
-      <!-- Menú Escritorio -->
       <div class="hidden lg:flex items-center gap-12">
         <ul class="flex items-center gap-8 list-none m-0 p-0 font-medium text-[0.85rem]">
           <li v-for="link in navLinks" :key="link.name">
@@ -24,28 +22,34 @@
           </li>
         </ul>
 
-        <!-- Botones de Acción -->
         <div class="flex items-center gap-4">
-          <button class="border-2 border-bu-teal text-bu-teal px-7 py-2 rounded-full font-bold text-xs hover:bg-bu-teal hover:text-white transition-all duration-300">
+          <button
+            type="button"
+            class="border-2 border-bu-teal text-bu-teal px-7 py-2 rounded-full font-bold text-xs hover:bg-bu-teal hover:text-white transition-all duration-300"
+            @click="isAuthModalOpen = true"
+          >
             Banca en Línea
           </button>
-          <button class="bg-bu-teal text-white px-7 py-2 rounded-full font-bold text-xs hover:bg-bu-teal-dark shadow-md shadow-bu-teal/20 transition-all duration-300">
+
+          <RouterLink
+            to="/registro"
+            class="bg-bu-teal text-white px-7 py-2 rounded-full font-bold text-xs hover:bg-bu-teal-dark shadow-md shadow-bu-teal/20 transition-all duration-300 no-underline"
+          >
             Registrarse
-          </button>
+          </RouterLink>
         </div>
       </div>
 
-      <!-- Botón Menú Móvil -->
       <button 
         @click="isMenuOpen = !isMenuOpen" 
         class="lg:hidden text-bu-teal p-2 focus:outline-none"
+        type="button"
       >
         <Menu v-if="!isMenuOpen" :size="28" />
         <X v-else :size="28" />
       </button>
     </div>
 
-    <!-- Menú Desplegable Móvil -->
     <Transition
       enter-active-class="transition duration-200 ease-out"
       enter-from-class="opacity-0 -translate-y-4"
@@ -66,26 +70,43 @@
             </a>
           </li>
         </ul>
+
         <div class="flex flex-col gap-4">
-          <button class="w-full border-2 border-bu-teal text-bu-teal py-3 rounded-full font-bold text-sm">
+          <button
+            type="button"
+            class="w-full border-2 border-bu-teal text-bu-teal py-3 rounded-full font-bold text-sm"
+            @click="openAuthFromMobile"
+          >
             Banca en Línea
           </button>
-          <button class="w-full bg-bu-teal text-white py-3 rounded-full font-bold text-sm shadow-lg shadow-bu-teal/20">
+
+          <RouterLink
+            to="/registro"
+            class="w-full bg-bu-teal text-white py-3 rounded-full font-bold text-sm shadow-lg shadow-bu-teal/20 text-center no-underline"
+            @click="isMenuOpen = false"
+          >
             Registrarse
-          </button>
+          </RouterLink>
         </div>
       </div>
     </Transition>
   </nav>
+
+  <AuthModal v-model="isAuthModalOpen" />
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { Menu, X } from 'lucide-vue-next'
 import BancoLogo from '../ui/BancoLogo.vue'
+import AuthModal from '../auth/AuthModal.vue'
+
+const route = useRoute()
 
 const isScrolled = ref(false)
 const isMenuOpen = ref(false)
+const isAuthModalOpen = ref(false)
 
 const navLinks = [
   { name: 'Inicio', href: '#inicio' },
@@ -98,8 +119,17 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 20
 }
 
+const openAuthFromMobile = () => {
+  isMenuOpen.value = false
+  isAuthModalOpen.value = true
+}
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+
+  if (route.query.login === 'true') {
+    isAuthModalOpen.value = true
+  }
 })
 
 onUnmounted(() => {
