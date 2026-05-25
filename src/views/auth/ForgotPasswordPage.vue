@@ -53,10 +53,6 @@
             </p>
           </div>
 
-          <div class="bg-bu-teal/10 border-l-4 border-bu-teal rounded-xl p-4 text-sm text-bu-navy-deep leading-relaxed">
-            <strong>Importante:</strong> esta pantalla es un flujo visual. Según el alcance actual, la recuperación real por correo no forma parte de la API.
-          </div>
-
           <button
             type="submit"
             class="w-full bg-bu-teal text-white rounded-xl py-4 font-bold shadow-lg shadow-bu-teal/20 hover:bg-bu-teal-dark transition-all flex items-center justify-center gap-2"

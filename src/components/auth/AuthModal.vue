@@ -121,10 +121,6 @@
                 </RouterLink>
               </div>
 
-              <div class="bg-bu-teal/10 border-l-4 border-bu-teal rounded-xl p-4 text-sm text-bu-navy-deep leading-relaxed">
-                <strong>Nota:</strong> este acceso es visual para la segunda entrega. La conexión con JWT y API se realizará en la banca en línea de la tercera entrega.
-              </div>
-
               <div class="grid sm:grid-cols-2 gap-4 pt-2">
                 <button
                   type="submit"

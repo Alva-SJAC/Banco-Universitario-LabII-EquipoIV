@@ -140,10 +140,6 @@
             <p v-if="errors.password" class="auth-error">{{ errors.password }}</p>
           </div>
 
-          <div class="bg-bu-teal/10 border-l-4 border-bu-teal rounded-xl p-4 text-sm text-bu-navy-deep leading-relaxed">
-            <strong>Campos ajustados según la API:</strong> nombre, apellido, cédula, correo, fecha de nacimiento, teléfono y contraseña.
-          </div>
-
           <div class="grid sm:grid-cols-2 gap-4 pt-4">
             <button
               type="submit"
