@@ -3,10 +3,6 @@
     <section class="w-full max-w-6xl bg-white rounded-[2rem] overflow-hidden shadow-2xl grid lg:grid-cols-[0.95fr_1.35fr]">
       <aside class="bg-bu-teal px-8 md:px-12 py-12 flex flex-col justify-between min-h-[620px]">
         <div>
-          <RouterLink to="/" class="inline-flex items-center gap-2 text-white/90 hover:text-white no-underline font-bold mb-10">
-            <ArrowLeft :size="18" />
-            Volver al inicio
-          </RouterLink>
 
           <div class="bg-white rounded-2xl p-5 shadow-lg w-full max-w-[280px]">
             <img
@@ -20,6 +16,7 @@
             <h1 class="text-3xl md:text-4xl font-bold mb-5">
               Únete a nosotros
             </h1>
+
             <p class="text-white/95 leading-relaxed max-w-sm">
               Abre tu cuenta 100% digital en pocos minutos y prepárate para disfrutar los servicios del Banco Universitario.
             </p>
@@ -36,7 +33,7 @@
           <button
             type="button"
             class="w-1/2 pb-4 text-center font-semibold text-slate-400 hover:text-bu-teal"
-            @click="openLoginAndGoHome"
+            @click="isAuthModalOpen = true"
           >
             Ingresar
           </button>
@@ -53,74 +50,105 @@
           <div class="grid md:grid-cols-2 gap-5">
             <div>
               <label class="auth-label">Nombre</label>
+
               <input
                 v-model.trim="form.nombre"
                 type="text"
                 class="auth-input"
                 placeholder="Ej: Rubén"
+                @input="form.nombre = onlyLetters(form.nombre)"
               />
-              <p v-if="errors.nombre" class="auth-error">{{ errors.nombre }}</p>
+
+              <p v-if="errors.nombre" class="auth-error">
+                {{ errors.nombre }}
+              </p>
             </div>
 
             <div>
               <label class="auth-label">Apellido</label>
+
               <input
                 v-model.trim="form.apellido"
                 type="text"
                 class="auth-input"
                 placeholder="Ej: Silva"
+                @input="form.apellido = onlyLetters(form.apellido)"
               />
-              <p v-if="errors.apellido" class="auth-error">{{ errors.apellido }}</p>
+
+              <p v-if="errors.apellido" class="auth-error">
+                {{ errors.apellido }}
+              </p>
             </div>
           </div>
 
           <div class="grid md:grid-cols-2 gap-5">
             <div>
               <label class="auth-label">Cédula</label>
+
               <input
                 v-model.trim="form.cedula"
                 type="text"
+                inputmode="numeric"
                 class="auth-input"
-                placeholder="Ej: V-30554598"
+                placeholder="Ej: 30554598"
+                @input="form.cedula = onlyNumbers(form.cedula)"
               />
-              <p v-if="errors.cedula" class="auth-error">{{ errors.cedula }}</p>
+
+              <p v-if="errors.cedula" class="auth-error">
+                {{ errors.cedula }}
+              </p>
             </div>
 
             <div>
               <label class="auth-label">Fecha de nacimiento</label>
+
               <input
                 v-model="form.fechaNacimiento"
                 type="date"
                 class="auth-input"
               />
-              <p v-if="errors.fechaNacimiento" class="auth-error">{{ errors.fechaNacimiento }}</p>
+
+              <p v-if="errors.fechaNacimiento" class="auth-error">
+                {{ errors.fechaNacimiento }}
+              </p>
             </div>
           </div>
 
           <div>
             <label class="auth-label">Correo electrónico</label>
+
             <input
               v-model.trim="form.correo"
               type="email"
               class="auth-input"
               placeholder="tu@universidad.edu"
             />
-            <p v-if="errors.correo" class="auth-error">{{ errors.correo }}</p>
+
+            <p v-if="errors.correo" class="auth-error">
+              {{ errors.correo }}
+            </p>
           </div>
 
           <div>
             <label class="auth-label">Teléfono</label>
+
             <input
               v-model.trim="form.telefono"
               type="tel"
+              inputmode="numeric"
               class="auth-input"
-              placeholder="Ej: 0412-0000000"
+              placeholder="Ej: 04120000000"
+              @input="form.telefono = onlyNumbers(form.telefono)"
             />
-            <p v-if="errors.telefono" class="auth-error">{{ errors.telefono }}</p>
+
+            <p v-if="errors.telefono" class="auth-error">
+              {{ errors.telefono }}
+            </p>
           </div>
 
           <div>
             <label class="auth-label">Contraseña</label>
+
             <div class="relative">
               <input
                 v-model.trim="form.password"
@@ -128,16 +156,21 @@
                 class="auth-input pr-12"
                 placeholder="Crea una contraseña segura"
               />
+
               <button
                 type="button"
                 class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-bu-teal"
+                aria-label="Mostrar u ocultar contraseña"
                 @click="showPassword = !showPassword"
               >
                 <EyeOff v-if="showPassword" :size="18" />
                 <Eye v-else :size="18" />
               </button>
             </div>
-            <p v-if="errors.password" class="auth-error">{{ errors.password }}</p>
+
+            <p v-if="errors.password" class="auth-error">
+              {{ errors.password }}
+            </p>
           </div>
 
           <div class="grid sm:grid-cols-2 gap-4 pt-4">
@@ -159,15 +192,18 @@
       </section>
     </section>
   </main>
+
+  <AuthModal v-model="isAuthModalOpen" />
 </template>
 
 <script setup>
 import { reactive, ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
-import { ArrowLeft, Eye, EyeOff } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
+import { Eye, EyeOff } from 'lucide-vue-next'
+import AuthModal from '../../components/auth/AuthModal.vue'
 
-const router = useRouter()
 const showPassword = ref(false)
+const isAuthModalOpen = ref(false)
 
 const form = reactive({
   nombre: '',
@@ -195,25 +231,72 @@ const clearErrors = () => {
   })
 }
 
+const onlyLetters = (value) => {
+  return value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '')
+}
+
+const onlyNumbers = (value) => {
+  return value.replace(/\D/g, '')
+}
+
+const isValidEmail = (value) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+}
+
 const handleSubmit = () => {
   clearErrors()
 
-  if (!form.nombre) errors.nombre = 'El nombre es obligatorio.'
-  if (!form.apellido) errors.apellido = 'El apellido es obligatorio.'
-  if (!form.cedula) errors.cedula = 'La cédula es obligatoria.'
-  if (!form.fechaNacimiento) errors.fechaNacimiento = 'La fecha de nacimiento es obligatoria.'
-  if (!form.correo) errors.correo = 'El correo electrónico es obligatorio.'
-  if (!form.telefono) errors.telefono = 'El teléfono es obligatorio.'
-  if (!form.password) errors.password = 'La contraseña es obligatoria.'
+  const lettersRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/
+  const numbersRegex = /^[0-9]+$/
+
+  if (!form.nombre) {
+    errors.nombre = 'El nombre es obligatorio.'
+  } else if (!lettersRegex.test(form.nombre)) {
+    errors.nombre = 'El nombre solo debe contener letras.'
+  }
+
+  if (!form.apellido) {
+    errors.apellido = 'El apellido es obligatorio.'
+  } else if (!lettersRegex.test(form.apellido)) {
+    errors.apellido = 'El apellido solo debe contener letras.'
+  }
+
+  if (!form.cedula) {
+    errors.cedula = 'La cédula es obligatoria.'
+  } else if (!numbersRegex.test(form.cedula)) {
+    errors.cedula = 'La cédula solo debe contener números.'
+  } else if (form.cedula.length < 6 || form.cedula.length > 10) {
+    errors.cedula = 'La cédula debe tener entre 6 y 10 números.'
+  }
+
+  if (!form.fechaNacimiento) {
+    errors.fechaNacimiento = 'La fecha de nacimiento es obligatoria.'
+  }
+
+  if (!form.correo) {
+    errors.correo = 'El correo electrónico es obligatorio.'
+  } else if (!isValidEmail(form.correo)) {
+    errors.correo = 'Ingresa un correo electrónico válido.'
+  }
+
+  if (!form.telefono) {
+    errors.telefono = 'El teléfono es obligatorio.'
+  } else if (!numbersRegex.test(form.telefono)) {
+    errors.telefono = 'El teléfono solo debe contener números.'
+  } else if (form.telefono.length < 10 || form.telefono.length > 11) {
+    errors.telefono = 'El teléfono debe tener entre 10 y 11 números.'
+  }
+
+  if (!form.password) {
+    errors.password = 'La contraseña es obligatoria.'
+  } else if (form.password.length < 6) {
+    errors.password = 'La contraseña debe tener al menos 6 caracteres.'
+  }
 
   const hasErrors = Object.values(errors).some(Boolean)
   if (hasErrors) return
 
-  alert('Registro visual completado. El envío real se conectará con la API en la tercera entrega.')
-}
-
-const openLoginAndGoHome = () => {
-  router.push({ path: '/', query: { login: 'true' } })
+  alert('Formulario visual de registro completado correctamente.')
 }
 </script>
 
