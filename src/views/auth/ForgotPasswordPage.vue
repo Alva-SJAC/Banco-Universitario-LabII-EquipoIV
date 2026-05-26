@@ -1,13 +1,5 @@
 <template>
-  <main class="min-h-screen bg-gradient-to-br from-bu-navy-deep via-bu-teal-dark to-bu-teal flex items-center justify-center px-4 py-10 relative overflow-hidden">
-    <RouterLink
-      to="/"
-      class="absolute top-6 left-6 inline-flex items-center gap-2 text-white bg-white/10 border border-white/20 rounded-full px-5 py-3 no-underline font-bold text-sm hover:bg-white/20 transition-all"
-    >
-      <ArrowLeft :size="17" />
-      Volver
-    </RouterLink>
-
+  <main class="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-10">
     <section class="w-full max-w-[430px] rounded-[1.8rem] overflow-hidden shadow-2xl bg-white">
       <div class="bg-gradient-to-br from-bu-teal to-bu-teal-dark px-8 py-10 text-center text-white">
         <div class="bg-white rounded-2xl p-4 shadow-lg w-[230px] mx-auto mb-8">
@@ -26,7 +18,7 @@
           Recuperar contraseña
         </h1>
 
-        <p class="text-white/90 text-sm leading-relaxed">
+        <p class="text-white/90 text-sm leading-relaxed max-w-xs mx-auto">
           Ingresa tu correo electrónico para visualizar el flujo de recuperación de credenciales.
         </p>
       </div>
@@ -39,7 +31,11 @@
             </label>
 
             <div class="relative">
-              <Mail class="absolute left-4 top-1/2 -translate-y-1/2 text-bu-teal" :size="18" />
+              <Mail
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-bu-teal"
+                :size="18"
+              />
+
               <input
                 v-model.trim="email"
                 type="email"
@@ -61,12 +57,22 @@
             <ArrowRight :size="18" />
           </button>
 
-          <RouterLink
-            to="/?login=true"
-            class="block text-center text-sm text-bu-teal hover:text-bu-teal-dark no-underline font-semibold"
-          >
-            ¿Recordaste tu contraseña? Inicia sesión
-          </RouterLink>
+          <div class="space-y-3 pt-1">
+            <button
+              type="button"
+              class="block w-full text-center text-sm text-bu-teal hover:text-bu-teal-dark font-semibold bg-transparent border-0 p-0"
+              @click="isAuthModalOpen = true"
+            >
+              ¿Recordaste tu contraseña? Inicia sesión
+            </button>
+
+            <RouterLink
+              to="/"
+              class="block text-center text-sm text-slate-500 hover:text-bu-teal no-underline font-semibold"
+            >
+              ← Volver al inicio
+            </RouterLink>
+          </div>
         </form>
       </div>
 
@@ -77,15 +83,19 @@
       </footer>
     </section>
   </main>
+
+  <AuthModal v-model="isAuthModalOpen" />
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ArrowLeft, ArrowRight, Mail } from 'lucide-vue-next'
+import { ArrowRight, Mail } from 'lucide-vue-next'
+import AuthModal from '../../components/auth/AuthModal.vue'
 
 const email = ref('')
 const error = ref('')
+const isAuthModalOpen = ref(false)
 
 const handleSubmit = () => {
   error.value = ''
@@ -95,6 +105,6 @@ const handleSubmit = () => {
     return
   }
 
-  alert('Flujo visual de recuperación. La funcionalidad real dependerá de la API en la siguiente entrega.')
+  alert('Formulario visual de recuperación de contraseña.')
 }
 </script>
