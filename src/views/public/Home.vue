@@ -12,6 +12,9 @@
     <!-- Misión y Visión -->
     <MissionVision />
 
+    <!-- Estadísticas -->
+    <StatsSection />
+
     <!-- Servicios y métricas -->
     <ServicesSection />
 
@@ -30,6 +33,7 @@ import FloatingBancaBtn from '../../components/layout/FloatingBancaBtn.vue'
 import HeroSection from '../../components/public/HeroSection.vue'
 import AboutSection from '../../components/public/AboutSection.vue'
 import MissionVision from '../../components/public/MissionVision.vue'
+import StatsSection from '../../components/public/StatsSection.vue'
 import ServicesSection from '../../components/public/ServicesSection.vue'
 </script>
 
