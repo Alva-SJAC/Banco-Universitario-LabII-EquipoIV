@@ -24,14 +24,15 @@
           </div>
 
           <div class="flex flex-col sm:flex-row gap-4">
-            <a href="#" class="inline-flex items-center justify-center gap-2 bg-[#49beb7] hover:bg-[#3b9f9a] text-white font-semibold px-6 py-3.5 rounded-xl shadow-lg shadow-[#085f63]/20 transition-all duration-300 transform hover:-translate-y-0.5">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="#" class="inline-flex items-center justify-center gap-2 bg-gradient-to-br from-[#52decb] via-[#2bb3a8] to-[#1a7f77] hover:from-[#3cd1be] hover:to-[#13635d] text-white font-semibold px-8 py-3.5 rounded-full shadow-lg shadow-[#043335]/50 transition-all duration-300 transform hover:-translate-y-0.5 tracking-wide">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
               Abrir Cuenta Digital
             </a>
-            <a href="tel:+582125555555" class="inline-flex items-center justify-center gap-2 border border-white/30 bg-white/5 hover:bg-white/10 text-white font-medium px-6 py-3.5 rounded-xl transition-all duration-300 backdrop-blur-sm">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            
+            <a href="tel:+582125555555" class="inline-flex items-center justify-center gap-2 border border-white/30 bg-white/5 hover:bg-[#52decb]/20 hover:border-[#52decb] hover:text-[#52decb] focus:bg-[#52decb]/30 focus:border-[#52decb] focus:text-[#52decb] text-white font-semibold px-8 py-3.5 rounded-full transition-all duration-300 backdrop-blur-sm shadow-md hover:shadow-[#52decb]/20 outline-none transform hover:-translate-y-0.5">
+              <svg class="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
               +58 212-555-5555
@@ -93,7 +94,7 @@
               </div>
 
               <button type="submit" 
-                class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#49beb7] to-[#2c9197] hover:from-[#3b9f9a] hover:to-[#227277] text-white font-semibold py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-[#085f63]/40 mt-2 transform hover:-translate-y-0.5">
+                class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#49beb7] to-[#2c9197] hover:from-[#3b9f9a] hover:to-[#227277] text-white font-semibold py-3.5 rounded-full transition-all duration-300 shadow-lg shadow-[#085f63]/40 mt-2 transform hover:-translate-y-0.5">
                 Enviar Mensaje
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
