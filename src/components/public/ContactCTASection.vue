@@ -1,6 +1,6 @@
 <template>
   <section id="contacto" class="relative py-20 overflow-hidden font-montserrat">
-    <div class="absolute inset-0 bg-[url('/image_65893e.jpg')] bg-cover bg-center">
+    <div class="absolute inset-0 bg-cover bg-center" :style="{ backgroundImage: `url(${bgContact})` }">
       <div class="absolute inset-0 bg-gradient-to-r from-[#085f63]/95 via-[#2c9197]/90 to-[#49beb7]/85 md:to-[#49beb7]/75"></div>
     </div>
 
@@ -110,6 +110,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import bgContact from '../../assets/img/Contact.png';
 
 const pasos = [
   "Ingresa a la banca en línea o visita nuestras sucursales",
