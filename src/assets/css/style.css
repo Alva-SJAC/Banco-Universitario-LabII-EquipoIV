@@ -6,10 +6,15 @@
 
 :root {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 body {
   @apply font-montserrat text-bu-navy-deep antialiased;
+}
+
+body.modal-open, html.modal-open {
+  overflow: hidden !important;
 }
 
 /* Clases de utilidad personalizadas para el proyecto */

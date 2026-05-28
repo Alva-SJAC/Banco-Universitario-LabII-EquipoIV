@@ -30,13 +30,12 @@
 
       <section class="px-8 md:px-12 lg:px-16 py-12">
         <div class="flex border-b border-slate-200 mb-10">
-          <button
-            type="button"
-            class="w-1/2 pb-4 text-center font-semibold text-slate-400 hover:text-bu-teal"
-            @click="isAuthModalOpen = true"
+          <RouterLink
+            to="/?login=true"
+            class="w-1/2 pb-4 text-center font-semibold text-slate-400 hover:text-bu-teal no-underline transition-colors block"
           >
             Ingresar
-          </button>
+          </RouterLink>
 
           <button
             type="button"
@@ -192,18 +191,14 @@
       </section>
     </section>
   </main>
-
-  <AuthModal v-model="isAuthModalOpen" />
 </template>
 
 <script setup>
 import { reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Eye, EyeOff } from 'lucide-vue-next'
-import AuthModal from '../../components/auth/AuthModal.vue'
 
 const showPassword = ref(false)
-const isAuthModalOpen = ref(false)
 
 const form = reactive({
   nombre: '',

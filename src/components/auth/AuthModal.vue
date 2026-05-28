@@ -10,7 +10,7 @@
     >
       <main
         v-if="modelValue"
-        class="fixed inset-0 z-[100] min-h-screen bg-slate-100 px-4 py-8 overflow-y-auto"
+        class="fixed inset-0 z-[100] bg-slate-100 px-4 py-8 overflow-y-auto"
       >
         <section class="min-h-full flex items-center justify-center">
           <div
@@ -20,7 +20,7 @@
               type="button"
               class="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-white text-bu-navy-deep shadow-md flex items-center justify-center hover:bg-bu-teal hover:text-white transition-all"
               aria-label="Cerrar login"
-              @click="closeModal"
+              @click="closeAndCleanRoute"
             >
               <X :size="20" />
             </button>
@@ -65,7 +65,7 @@
                 <RouterLink
                   to="/registro"
                   class="w-1/2 pb-4 text-center font-semibold text-slate-400 hover:text-bu-teal no-underline transition-colors"
-                  @click="closeModal"
+                  @click="justClose"
                 >
                   Registrarse
                 </RouterLink>
@@ -134,7 +134,7 @@
                   <RouterLink
                     to="/recuperar-contrasena"
                     class="text-sm font-semibold text-bu-teal hover:text-bu-teal-dark no-underline"
-                    @click="closeModal"
+                    @click="justClose"
                   >
                     ¿Olvidaste tu contraseña?
                   </RouterLink>
@@ -151,7 +151,7 @@
                   <button
                     type="button"
                     class="border-2 border-slate-200 text-bu-navy-deep rounded-full py-4 font-bold hover:border-bu-teal hover:text-bu-teal transition-all"
-                    @click="closeModal"
+                    @click="closeAndCleanRoute"
                   >
                     Volver
                   </button>
@@ -165,12 +165,16 @@
   </Teleport>
 </template>
 
+<script>
+let openModalsCount = 0
+</script>
+
 <script setup>
-import { reactive, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { reactive, ref, watch, onUnmounted } from 'vue'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { Eye, EyeOff, LockKeyhole, Mail, X } from 'lucide-vue-next'
 
-defineProps({
+const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false
@@ -178,6 +182,45 @@ defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+
+const router = useRouter()
+const route = useRoute()
+
+let scrollLockTimer = null
+let isCurrentlyOpen = false
+
+watch(() => props.modelValue, (isOpen) => {
+  if (scrollLockTimer) clearTimeout(scrollLockTimer)
+  
+  scrollLockTimer = setTimeout(() => {
+    if (isOpen && !isCurrentlyOpen) {
+      isCurrentlyOpen = true
+      openModalsCount++
+    } else if (!isOpen && isCurrentlyOpen) {
+      isCurrentlyOpen = false
+      openModalsCount = Math.max(0, openModalsCount - 1)
+    }
+
+    if (openModalsCount > 0) {
+      document.body.classList.add('modal-open')
+      document.documentElement.classList.add('modal-open')
+    } else {
+      document.body.classList.remove('modal-open')
+      document.documentElement.classList.remove('modal-open')
+    }
+  }, 50)
+}, { immediate: true })
+
+onUnmounted(() => {
+  if (scrollLockTimer) clearTimeout(scrollLockTimer)
+  if (isCurrentlyOpen) {
+    openModalsCount = Math.max(0, openModalsCount - 1)
+    if (openModalsCount === 0) {
+      document.body.classList.remove('modal-open')
+      document.documentElement.classList.remove('modal-open')
+    }
+  }
+})
 
 const showPassword = ref(false)
 
@@ -191,7 +234,17 @@ const errors = reactive({
   password: ''
 })
 
-const closeModal = () => {
+const closeAndCleanRoute = () => {
+  emit('update:modelValue', false)
+  
+  if (route.query.login === 'true') {
+    const newQuery = { ...route.query }
+    delete newQuery.login
+    router.replace({ path: route.path, query: newQuery })
+  }
+}
+
+const justClose = () => {
   emit('update:modelValue', false)
 }
 

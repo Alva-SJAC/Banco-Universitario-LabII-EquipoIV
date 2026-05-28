@@ -106,7 +106,7 @@ const route = useRoute()
 
 const isScrolled = ref(false)
 const isMenuOpen = ref(false)
-const isAuthModalOpen = ref(false)
+const isAuthModalOpen = ref(route.query.login === 'true')
 
 const navLinks = [
   { name: 'Inicio', href: '#inicio' },
@@ -126,10 +126,6 @@ const openAuthFromMobile = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
-
-  if (route.query.login === 'true') {
-    isAuthModalOpen.value = true
-  }
 })
 
 onUnmounted(() => {
