@@ -24,12 +24,12 @@
           </div>
 
           <div class="flex flex-col sm:flex-row gap-4">
-            <a href="#" class="inline-flex items-center justify-center gap-2 bg-gradient-to-br from-[#52decb] via-[#2bb3a8] to-[#1a7f77] hover:from-[#3cd1be] hover:to-[#13635d] text-white font-semibold px-8 py-3.5 rounded-full shadow-lg shadow-[#043335]/50 transition-all duration-300 transform hover:-translate-y-0.5 tracking-wide">
+            <RouterLink to="/registro"  class="inline-flex items-center justify-center gap-2 bg-gradient-to-br from-[#52decb] via-[#2bb3a8] to-[#1a7f77] hover:from-[#3cd1be] hover:to-[#13635d] text-white font-semibold px-8 py-3.5 rounded-full shadow-lg shadow-[#043335]/50 transition-all duration-300 transform hover:-translate-y-0.5 tracking-wide">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
               Abrir Cuenta Digital
-            </a>
+            </RouterLink>
             
             <a href="tel:+582125555555" class="inline-flex items-center justify-center gap-2 border border-white/30 bg-white/5 hover:bg-[#52decb]/20 hover:border-[#52decb] hover:text-[#52decb] focus:bg-[#52decb]/30 focus:border-[#52decb] focus:text-[#52decb] text-white font-semibold px-8 py-3.5 rounded-full transition-all duration-300 backdrop-blur-sm shadow-md hover:shadow-[#52decb]/20 outline-none transform hover:-translate-y-0.5">
               <svg class="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
