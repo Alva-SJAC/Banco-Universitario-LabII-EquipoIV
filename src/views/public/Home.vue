@@ -18,6 +18,9 @@
     <!-- Servicios y métricas -->
     <ServicesSection />
 
+    <!-- Contacto -->
+    <ContactCTASection />
+
     <!-- Pie de página -->
     <Footer />
 
@@ -35,6 +38,7 @@ import AboutSection from '../../components/public/AboutSection.vue'
 import MissionVision from '../../components/public/MissionVision.vue'
 import StatsSection from '../../components/public/StatsSection.vue'
 import ServicesSection from '../../components/public/ServicesSection.vue'
+import ContactCTASection from '../../components/public/ContactCTASection.vue'
 </script>
 
 <style scoped>
