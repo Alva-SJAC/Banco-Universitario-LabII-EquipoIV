@@ -145,31 +145,60 @@
             </p>
           </div>
 
-          <div>
-            <label class="auth-label">Contraseña</label>
+          <div class="grid md:grid-cols-2 gap-5">
+            <div>
+              <label class="auth-label">Contraseña</label>
 
-            <div class="relative">
-              <input
-                v-model.trim="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                class="auth-input pr-12"
-                placeholder="Crea una contraseña segura"
-              />
+              <div class="relative">
+                <input
+                  v-model.trim="form.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  class="auth-input pr-12"
+                  placeholder="Crea una contraseña"
+                />
 
-              <button
-                type="button"
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-bu-teal"
-                aria-label="Mostrar u ocultar contraseña"
-                @click="showPassword = !showPassword"
-              >
-                <EyeOff v-if="showPassword" :size="18" />
-                <Eye v-else :size="18" />
-              </button>
+                <button
+                  type="button"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-bu-teal"
+                  aria-label="Mostrar u ocultar contraseña"
+                  @click="showPassword = !showPassword"
+                >
+                  <EyeOff v-if="showPassword" :size="18" />
+                  <Eye v-else :size="18" />
+                </button>
+              </div>
+
+              <p v-if="errors.password" class="auth-error">
+                {{ errors.password }}
+              </p>
             </div>
 
-            <p v-if="errors.password" class="auth-error">
-              {{ errors.password }}
-            </p>
+            <div>
+              <label class="auth-label">Confirmar Contraseña</label>
+
+              <div class="relative">
+                <input
+                  v-model.trim="form.confirmPassword"
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  class="auth-input pr-12"
+                  placeholder="Repite tu contraseña"
+                />
+
+                <button
+                  type="button"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-bu-teal"
+                  aria-label="Mostrar u ocultar confirmar contraseña"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                >
+                  <EyeOff v-if="showConfirmPassword" :size="18" />
+                  <Eye v-else :size="18" />
+                </button>
+              </div>
+
+              <p v-if="errors.confirmPassword" class="auth-error">
+                {{ errors.confirmPassword }}
+              </p>
+            </div>
           </div>
 
           <div class="grid sm:grid-cols-2 gap-4 pt-4">
@@ -200,6 +229,7 @@ import { Eye, EyeOff } from 'lucide-vue-next'
 
 const router = useRouter()
 const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 
 const form = reactive({
   nombre: '',
@@ -208,7 +238,8 @@ const form = reactive({
   fechaNacimiento: '',
   correo: '',
   telefono: '',
-  password: ''
+  password: '',
+  confirmPassword: ''
 })
 
 const errors = reactive({
@@ -218,7 +249,8 @@ const errors = reactive({
   fechaNacimiento: '',
   correo: '',
   telefono: '',
-  password: ''
+  password: '',
+  confirmPassword: ''
 })
 
 const clearErrors = () => {
@@ -287,6 +319,12 @@ const handleSubmit = () => {
     errors.password = 'La contraseña es obligatoria.'
   } else if (form.password.length < 6) {
     errors.password = 'La contraseña debe tener al menos 6 caracteres.'
+  }
+
+  if (!form.confirmPassword) {
+    errors.confirmPassword = 'Debes confirmar tu contraseña.'
+  } else if (form.confirmPassword !== form.password) {
+    errors.confirmPassword = 'Las contraseñas no coinciden.'
   }
 
   const hasErrors = Object.values(errors).some(Boolean)
