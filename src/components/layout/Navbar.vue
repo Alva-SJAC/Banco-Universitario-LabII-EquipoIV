@@ -96,7 +96,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Menu, X } from 'lucide-vue-next'
 import BancoLogo from '../ui/BancoLogo.vue'
@@ -107,6 +107,11 @@ const route = useRoute()
 const isScrolled = ref(false)
 const isMenuOpen = ref(false)
 const isAuthModalOpen = ref(route.query.login === 'true')
+
+// Observar el query parameter de login para abrir/cerrar el modal dinámicamente
+watch(() => route.query.login, (newVal) => {
+  isAuthModalOpen.value = newVal === 'true'
+})
 
 const navLinks = [
   { name: 'Inicio', href: '#inicio' },
