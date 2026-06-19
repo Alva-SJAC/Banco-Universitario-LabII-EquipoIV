@@ -29,3 +29,51 @@ body.modal-open, html.modal-open {
 .bu-container {
   @apply container mx-auto px-4;
 }
+
+/* Animaciones del Dashboard */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Barra de desplazamiento personalizada para la banca en línea */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f1e2e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a2a38;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #49beb7;
+}
+
+/* Colores personalizados y clases del dashboard */
+.text-bu-teal {
+  color: #49beb7;
+}
+.bg-bu-teal {
+  background-color: #49beb7;
+}
+.border-bu-teal {
+  border-color: #49beb7;
+}
+

@@ -195,9 +195,10 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { Eye, EyeOff } from 'lucide-vue-next'
 
+const router = useRouter()
 const showPassword = ref(false)
 
 const form = reactive({
@@ -291,7 +292,7 @@ const handleSubmit = () => {
   const hasErrors = Object.values(errors).some(Boolean)
   if (hasErrors) return
 
-  alert('Formulario visual de registro completado correctamente.')
+  router.push('/dashboard')
 }
 </script>
 

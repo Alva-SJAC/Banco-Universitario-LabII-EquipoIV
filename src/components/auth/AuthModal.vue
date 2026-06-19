@@ -262,6 +262,8 @@ const handleSubmit = () => {
 
   if (errors.email || errors.password) return
 
-  alert('Formulario visual de inicio de sesión.')
+  // Cerrar el modal y redirigir a la banca en línea
+  justClose()
+  router.push('/dashboard')
 }
 </script>
