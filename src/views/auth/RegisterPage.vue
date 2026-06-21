@@ -204,9 +204,14 @@
           <div class="grid sm:grid-cols-2 gap-4 pt-4">
             <button
               type="submit"
-              class="bg-bu-teal text-white rounded-full py-4 font-bold shadow-lg shadow-bu-teal/20 hover:bg-bu-teal-dark transition-all"
+              :disabled="isLoading"
+              class="bg-bu-teal text-white rounded-full py-4 font-bold shadow-lg shadow-bu-teal/20 hover:bg-bu-teal-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Crear cuenta
+              <svg v-if="isLoading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ isLoading ? 'Creando cuenta...' : 'Crear cuenta' }}</span>
             </button>
 
             <RouterLink
@@ -226,10 +231,12 @@
 import { reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { Eye, EyeOff } from 'lucide-vue-next'
+import { authService } from '../../services/authService'
 
 const router = useRouter()
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
+const isLoading = ref(false)
 
 const form = reactive({
   nombre: '',
@@ -271,7 +278,7 @@ const isValidEmail = (value) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   clearErrors()
 
   const lettersRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/
@@ -317,8 +324,8 @@ const handleSubmit = () => {
 
   if (!form.password) {
     errors.password = 'La contraseña es obligatoria.'
-  } else if (form.password.length < 6) {
-    errors.password = 'La contraseña debe tener al menos 6 caracteres.'
+  } else if (form.password.length < 8 || form.password.length > 16) {
+    errors.password = 'La contraseña debe tener entre 8 y 16 caracteres.'
   }
 
   if (!form.confirmPassword) {
@@ -330,7 +337,30 @@ const handleSubmit = () => {
   const hasErrors = Object.values(errors).some(Boolean)
   if (hasErrors) return
 
-  router.push('/dashboard')
+  const payload = {
+    first_name: form.nombre,
+    last_name: form.apellido,
+    document_number: form.cedula,
+    birth_date: `${form.fechaNacimiento}T00:00:00Z`,
+    phone_number: form.telefono,
+    email: form.correo,
+    password: form.password
+  }
+
+  try {
+    isLoading.value = true
+    const response = await authService.register(payload)
+    console.log('Registro exitoso:', response)
+    // El modal de éxito detallado y redirección final se implementará en el Commit 4.
+    // Por ahora redirigimos temporalmente o damos feedback simple.
+    alert(`¡Registro exitoso! Cuenta asignada: ${response?.data?.account_number || ''}`)
+    router.push('/?login=true')
+  } catch (error) {
+    console.error('Error al registrar usuario:', error)
+    alert(error.response?.data?.message || 'Error al procesar el registro')
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
