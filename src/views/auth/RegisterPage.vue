@@ -401,7 +401,12 @@ const handleSubmit = async () => {
   }
 
   const hasErrors = Object.values(errors).some(Boolean)
-  if (hasErrors) return
+  if (hasErrors) {
+    setTimeout(() => {
+      document.querySelector('.auth-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 100)
+    return
+  }
 
   const payload = {
     first_name: form.nombre,
@@ -448,6 +453,14 @@ const handleSubmit = async () => {
     } else {
       apiError.value = 'No se pudo establecer conexión con el servidor bancario. Por favor, intente más tarde.'
     }
+    
+    setTimeout(() => {
+      if (apiError.value) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        document.querySelector('.auth-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 100)
   } finally {
     isLoading.value = false
   }
