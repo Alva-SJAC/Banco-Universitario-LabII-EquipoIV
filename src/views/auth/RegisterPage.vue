@@ -45,6 +45,11 @@
           </button>
         </div>
 
+        <div v-if="apiError" class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-600">
+          <AlertCircle class="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <p class="text-sm font-medium">{{ apiError }}</p>
+        </div>
+
         <form class="space-y-5" @submit.prevent="handleSubmit">
           <div class="grid md:grid-cols-2 gap-5">
             <div>
@@ -204,9 +209,14 @@
           <div class="grid sm:grid-cols-2 gap-4 pt-4">
             <button
               type="submit"
-              class="bg-bu-teal text-white rounded-full py-4 font-bold shadow-lg shadow-bu-teal/20 hover:bg-bu-teal-dark transition-all"
+              :disabled="isLoading"
+              class="bg-bu-teal text-white rounded-full py-4 font-bold shadow-lg shadow-bu-teal/20 hover:bg-bu-teal-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Crear cuenta
+              <svg v-if="isLoading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ isLoading ? 'Creando cuenta...' : 'Crear cuenta' }}</span>
             </button>
 
             <RouterLink
@@ -219,17 +229,80 @@
         </form>
       </section>
     </section>
+
+    <!-- Modal de Éxito -->
+    <div v-if="showSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+        <div class="bg-bu-teal py-8 px-6 text-center relative">
+          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <CheckCircle class="w-8 h-8 text-bu-teal" />
+          </div>
+          <h2 class="text-2xl font-bold text-white">¡Registro Exitoso!</h2>
+          <p class="text-teal-50 mt-2 text-sm">Tu cuenta ha sido creada correctamente.</p>
+        </div>
+        
+        <div class="p-8 text-center">
+          <p class="text-slate-500 font-medium mb-3 text-sm">Tu número de cuenta asignado es:</p>
+          
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group hover:border-bu-teal transition-colors">
+            <span class="text-lg font-bold tracking-widest text-bu-navy-deep select-all">{{ assignedAccountNumber }}</span>
+            <button 
+              type="button"
+              @click="copyToClipboard" 
+              class="text-slate-400 hover:text-bu-teal transition-colors p-2 rounded-lg hover:bg-teal-50"
+              title="Copiar número de cuenta"
+            >
+              <Check v-if="copied" class="w-5 h-5 text-green-500" />
+              <Copy v-else class="w-5 h-5" />
+            </button>
+          </div>
+          <p v-if="copied" class="text-xs font-semibold text-green-500 mt-2 text-right transition-opacity">¡Copiado al portapapeles!</p>
+          
+          <button 
+            type="button"
+            @click="closeModal"
+            class="mt-8 w-full bg-bu-navy-deep text-white rounded-full py-3.5 font-bold shadow-lg hover:bg-slate-800 transition-all flex justify-center items-center gap-2"
+          >
+            Ir a iniciar sesión
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
 <script setup>
 import { reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { Eye, EyeOff } from 'lucide-vue-next'
+import { Eye, EyeOff, CheckCircle, Copy, Check, AlertCircle } from 'lucide-vue-next'
+import { authService } from '../../services/authService'
 
 const router = useRouter()
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
+const isLoading = ref(false)
+
+const apiError = ref('')
+const showSuccessModal = ref(false)
+const assignedAccountNumber = ref('')
+const copied = ref(false)
+
+const copyToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(assignedAccountNumber.value)
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
+  } catch (err) {
+    console.error('Error al copiar al portapapeles', err)
+  }
+}
+
+const closeModal = () => {
+  showSuccessModal.value = false
+  router.push(`/?login=true&email=${encodeURIComponent(form.correo)}`)
+}
 
 const form = reactive({
   nombre: '',
@@ -271,7 +344,7 @@ const isValidEmail = (value) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   clearErrors()
 
   const lettersRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/
@@ -317,8 +390,8 @@ const handleSubmit = () => {
 
   if (!form.password) {
     errors.password = 'La contraseña es obligatoria.'
-  } else if (form.password.length < 6) {
-    errors.password = 'La contraseña debe tener al menos 6 caracteres.'
+  } else if (form.password.length < 8 || form.password.length > 16) {
+    errors.password = 'La contraseña debe tener entre 8 y 16 caracteres.'
   }
 
   if (!form.confirmPassword) {
@@ -328,9 +401,69 @@ const handleSubmit = () => {
   }
 
   const hasErrors = Object.values(errors).some(Boolean)
-  if (hasErrors) return
+  if (hasErrors) {
+    setTimeout(() => {
+      document.querySelector('.auth-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 100)
+    return
+  }
 
-  router.push('/dashboard')
+  const payload = {
+    first_name: form.nombre,
+    last_name: form.apellido,
+    document_number: form.cedula,
+    birth_date: `${form.fechaNacimiento}T00:00:00Z`,
+    phone_number: form.telefono,
+    email: form.correo,
+    password: form.password
+  }
+
+  try {
+    isLoading.value = true
+    apiError.value = ''
+    
+    const response = await authService.register(payload)
+    
+    assignedAccountNumber.value = response?.data?.account_number || 'Número de cuenta no disponible'
+    showSuccessModal.value = true
+    
+  } catch (error) {
+    console.error('Error al registrar usuario:', error)
+    
+    if (error.response) {
+      const status = error.response.status
+      const errorMsg = error.response.data?.message || ''
+      
+      if (status === 409) {
+        apiError.value = 'El correo o la cédula ya se encuentran registrados.'
+        errors.correo = 'Verifica tu correo.'
+        errors.cedula = 'Verifica tu cédula.'
+      } else if (status === 400) {
+        apiError.value = 'Por favor, revisa los errores en el formulario devueltos por el servidor.'
+        const errorText = errorMsg.toLowerCase()
+        if (errorText.includes('first_name') || errorText.includes('firstname')) errors.nombre = 'Nombre inválido.'
+        if (errorText.includes('last_name') || errorText.includes('lastname')) errors.apellido = 'Apellido inválido.'
+        if (errorText.includes('document_number')) errors.cedula = 'Cédula inválida.'
+        if (errorText.includes('email')) errors.correo = 'Correo inválido.'
+        if (errorText.includes('password')) errors.password = 'Contraseña inválida.'
+        if (errorText.includes('phone_number')) errors.telefono = 'Teléfono inválido.'
+      } else {
+        apiError.value = errorMsg || 'Error inesperado al conectar con el servidor.'
+      }
+    } else {
+      apiError.value = 'No se pudo establecer conexión con el servidor bancario. Por favor, intente más tarde.'
+    }
+    
+    setTimeout(() => {
+      if (apiError.value) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        document.querySelector('.auth-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 100)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
