@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
 import Home from '../views/public/Home.vue'
 import RegisterPage from '../views/auth/RegisterPage.vue'
 import ForgotPasswordPage from '../views/auth/ForgotPasswordPage.vue'
+
 import DashboardLayout from '../views/dashboard/DashboardLayout.vue'
 import DashboardHome from '../views/dashboard/Home.vue'
 import Movements from '../views/dashboard/Movements.vue'
@@ -28,7 +30,11 @@ const routes = [
   },
   {
     path: '/dashboard',
+    name: 'Dashboard',
     component: DashboardLayout,
+    meta: {
+      requiresAuth: true
+    },
     children: [
       {
         path: '',
@@ -70,6 +76,17 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 }
   }
+})
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('bu_token')
+
+  if (to.matched.some((record) => record.meta.requiresAuth) && !token) {
+    next('/')
+    return
+  }
+
+  next()
 })
 
 export default router
