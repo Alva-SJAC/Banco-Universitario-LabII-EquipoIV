@@ -127,6 +127,11 @@
     <!-- Movements List -->
     <div>
       <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Transacciones Recientes</h2>
+      
+      <div v-if="isLoading" class="text-center py-6 text-slate-400 font-medium">
+        Cargando transacciones en tiempo real...
+      </div>
+
       <div class="space-y-3">
         <div
           v-for="movement in filteredMovements"
@@ -184,7 +189,7 @@
 </template>
 
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, onMounted } from 'vue'
 import {
   TrendingUp,
   ArrowUpRight,
@@ -197,6 +202,7 @@ import {
   ChevronDown
 } from 'lucide-vue-next'
 import TransferReceiptModal from '../../components/dashboard/TransferReceiptModal.vue'
+import { movementService } from '../../services/movementService'
 
 const addToast = inject('addToast', () => {})
 
@@ -205,6 +211,10 @@ const filterType = ref('all')
 const showReceiptModal = ref(false)
 const selectedMovement = ref(null)
 
+// Variables de estado para la API
+const allMovements = ref([])
+const isLoading = ref(true)
+
 const accounts = [
   { id: 'all', name: 'Todas las cuentas' },
   { id: '1', name: 'Cuenta Corriente - ****1234' },
@@ -212,112 +222,50 @@ const accounts = [
   { id: '3', name: 'Cuenta en Dólares - ****9012' }
 ]
 
-const allMovements = [
-  {
-    id: 1,
-    description: 'Transferencia a María',
-    amount: -150.00,
-    date: '2026-04-10',
-    time: '14:30',
-    icon: Send,
-    iconBgColor: 'rgba(8, 95, 99, 0.2)',
-    iconColor: '#49beb7',
-    amountColor: '#0a9fa5',
-    accountId: '1'
-  },
-  {
-    id: 2,
-    description: 'Depósito - Salario',
-    amount: 2500.00,
-    date: '2026-04-09',
-    time: '08:00',
-    icon: ArrowDownRight,
-    iconBgColor: 'rgba(8, 95, 99, 0.2)',
-    iconColor: '#49beb7',
-    amountColor: '#49beb7',
-    accountId: '1'
-  },
-  {
-    id: 3,
-    description: 'Pago - Servicios',
-    amount: -89.50,
-    date: '2026-04-08',
-    time: '16:45',
-    icon: Send,
-    iconBgColor: 'rgba(73, 190, 183, 0.2)',
-    iconColor: '#0a9fa5',
-    amountColor: '#0a9fa5',
-    accountId: '1'
-  },
-  {
-    id: 4,
-    description: 'Transferencia recibida',
-    amount: 350.00,
-    date: '2026-04-07',
-    time: '11:20',
-    icon: ArrowDownRight,
-    iconBgColor: 'rgba(8, 95, 99, 0.2)',
-    iconColor: '#49beb7',
-    amountColor: '#49beb7',
-    accountId: '2'
-  },
-  {
-    id: 5,
-    description: 'Transferencia a Carlos',
-    amount: -200.00,
-    date: '2026-04-06',
-    time: '10:15',
-    icon: Send,
-    iconBgColor: 'rgba(8, 95, 99, 0.2)',
-    iconColor: '#49beb7',
-    amountColor: '#0a9fa5',
-    accountId: '1'
-  },
-  {
-    id: 6,
-    description: 'Pago - CANTV',
-    amount: -45.00,
-    date: '2026-04-05',
-    time: '09:30',
-    icon: Wallet,
-    iconBgColor: 'rgba(73, 190, 183, 0.2)',
-    iconColor: '#0a9fa5',
-    amountColor: '#0a9fa5',
-    accountId: '2'
-  },
-  {
-    id: 7,
-    description: 'Transferencia de Ana',
-    amount: 120.00,
-    date: '2026-04-04',
-    time: '15:00',
-    icon: ArrowDownRight,
-    iconBgColor: 'rgba(8, 95, 99, 0.2)',
-    iconColor: '#49beb7',
-    amountColor: '#49beb7',
-    accountId: '3'
-  },
-  {
-    id: 8,
-    description: 'Transferencia a Pedro',
-    amount: -80.00,
-    date: '2026-04-03',
-    time: '13:45',
-    icon: Send,
-    iconBgColor: 'rgba(8, 95, 99, 0.2)',
-    iconColor: '#49beb7',
-    amountColor: '#0a9fa5',
-    accountId: '1'
+// Cargar movimientos desde el backend al montar el componente
+onMounted(async () => {
+  try {
+    isLoading.value = true
+    const data = await movementService.getMovements()
+    
+    // Mapeamos la respuesta del backend de Go al formato visual del frontend
+    allMovements.value = data.map((mov) => {
+      // Determinamos el signo real multiplicando el monto por el multiplier de la BD
+      const realAmount = mov.amount * (mov.multiplier || 1)
+      const isIncoming = realAmount > 0
+
+      // Formatear fecha y hora provenientes de created_at (ej: "2026-04-10T14:30:00Z")
+      const dateObj = new Date(mov.created_at)
+      const formattedDate = dateObj.toISOString().split('T')[0]
+      const formattedTime = dateObj.toTimeString().substring(0, 5)
+
+      return {
+        id: mov.id,
+        description: mov.description || 'Transferencia',
+        amount: realAmount,
+        date: formattedDate,
+        time: formattedTime,
+        // Conservamos la asignación de iconos nativos de tu equipo
+        icon: isIncoming ? ArrowDownRight : Send,
+        iconBgColor: isIncoming ? 'rgba(8, 95, 99, 0.2)' : 'rgba(73, 190, 183, 0.2)',
+        iconColor: isIncoming ? '#49beb7' : '#0a9fa5',
+        amountColor: isIncoming ? '#49beb7' : '#0a9fa5',
+        accountId: mov.account_id || '1' // Mapeo de relación de cuenta
+      }
+    })
+  } catch (error) {
+    console.error('Error cargando movimientos:', error)
+    addToast('Error al conectar con el servidor financiero', 'error')
+  } finally {
+    isLoading.value = false
   }
-]
+})
 
 const filteredMovements = computed(() => {
-  return allMovements.filter((movement) => {
-    // Filtro de Cuenta
+  return allMovements.value.filter((movement) => {
     if (selectedAccount.value !== 'all' && movement.accountId !== selectedAccount.value) {
       return false
     }
-    // Filtro de Tipo
     if (filterType.value === 'incoming') return movement.amount > 0
     if (filterType.value === 'outgoing') return movement.amount < 0
     return true
@@ -335,13 +283,13 @@ const formatCurrency = (amount) => {
 }
 
 const totalIncoming = computed(() => {
-  return allMovements
+  return allMovements.value
     .filter((m) => m.amount > 0 && (selectedAccount.value === 'all' || m.accountId === selectedAccount.value))
     .reduce((sum, m) => sum + m.amount, 0)
 })
 
 const totalOutgoing = computed(() => {
-  return allMovements
+  return allMovements.value
     .filter((m) => m.amount < 0 && (selectedAccount.value === 'all' || m.accountId === selectedAccount.value))
     .reduce((sum, m) => sum + Math.abs(m.amount), 0)
 })
