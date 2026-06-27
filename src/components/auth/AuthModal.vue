@@ -278,10 +278,10 @@ const handleSubmit = async () => {
   isLoading.value = true
 
   try {
-    const data = await loginUser({
-      correo: form.email,
-      password: form.password
-    })
+      const data = await loginUser({
+        email: form.email,
+        password: form.password
+      })
 
     const token =
       data?.token ||
@@ -300,6 +300,7 @@ const handleSubmit = async () => {
       data?.data?.user ||
       data?.data?.usuario ||
       data?.data?.client ||
+      data?.data
       null
 
     if (!token) {
