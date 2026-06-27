@@ -140,12 +140,17 @@
                   </RouterLink>
                 </div>
 
+                <p v-if="generalError" class="text-red-500 text-sm font-semibold text-center">
+                  {{ generalError }}
+                </p>
+
                 <div class="grid sm:grid-cols-2 gap-4 pt-5">
                   <button
                     type="submit"
-                    class="bg-bu-teal text-white rounded-full py-4 font-bold shadow-lg shadow-bu-teal/20 hover:bg-bu-teal-dark transition-all"
+                    class="bg-bu-teal text-white rounded-full py-4 font-bold shadow-lg shadow-bu-teal/20 hover:bg-bu-teal-dark transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                    :disabled="isLoading"
                   >
-                    Ingresar
+                    {{ isLoading ? 'Ingresando...' : 'Ingresar' }}
                   </button>
 
                   <button
@@ -173,6 +178,8 @@ let openModalsCount = 0
 import { reactive, ref, watch, onUnmounted } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { Eye, EyeOff, LockKeyhole, Mail, X } from 'lucide-vue-next'
+import { loginUser } from '../../api/authApi'
+import { useAuth } from '../../composables/useAuth'
 
 const props = defineProps({
   modelValue: {
@@ -185,13 +192,14 @@ const emit = defineEmits(['update:modelValue'])
 
 const router = useRouter()
 const route = useRoute()
+const { setSession } = useAuth()
 
 let scrollLockTimer = null
 let isCurrentlyOpen = false
 
 watch(() => props.modelValue, (isOpen) => {
   if (scrollLockTimer) clearTimeout(scrollLockTimer)
-  
+
   scrollLockTimer = setTimeout(() => {
     if (isOpen && !isCurrentlyOpen) {
       isCurrentlyOpen = true
@@ -213,8 +221,10 @@ watch(() => props.modelValue, (isOpen) => {
 
 onUnmounted(() => {
   if (scrollLockTimer) clearTimeout(scrollLockTimer)
+
   if (isCurrentlyOpen) {
     openModalsCount = Math.max(0, openModalsCount - 1)
+
     if (openModalsCount === 0) {
       document.body.classList.remove('modal-open')
       document.documentElement.classList.remove('modal-open')
@@ -223,6 +233,8 @@ onUnmounted(() => {
 })
 
 const showPassword = ref(false)
+const isLoading = ref(false)
+const generalError = ref('')
 
 const form = reactive({
   email: '',
@@ -236,7 +248,7 @@ const errors = reactive({
 
 const closeAndCleanRoute = () => {
   emit('update:modelValue', false)
-  
+
   if (route.query.login === 'true') {
     const newQuery = { ...route.query }
     delete newQuery.login
@@ -248,9 +260,10 @@ const justClose = () => {
   emit('update:modelValue', false)
 }
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   errors.email = ''
   errors.password = ''
+  generalError.value = ''
 
   if (!form.email) {
     errors.email = 'El correo electrónico es obligatorio.'
@@ -262,8 +275,60 @@ const handleSubmit = () => {
 
   if (errors.email || errors.password) return
 
-  // Cerrar el modal y redirigir a la banca en línea
-  justClose()
-  router.push('/dashboard')
+  isLoading.value = true
+
+  try {
+      const data = await loginUser({
+        email: form.email,
+        password: form.password
+      })
+
+    const token =
+      data?.token ||
+      data?.accessToken ||
+      data?.access_token ||
+      data?.jwt ||
+      data?.data?.token ||
+      data?.data?.accessToken ||
+      data?.data?.access_token ||
+      data?.data?.jwt
+
+    const userData =
+      data?.user ||
+      data?.usuario ||
+      data?.client ||
+      data?.data?.user ||
+      data?.data?.usuario ||
+      data?.data?.client ||
+      data?.data
+      null
+
+    if (!token) {
+      generalError.value = 'La API respondió correctamente, pero no devolvió un token válido.'
+      return
+    }
+
+    setSession(token, userData)
+
+    form.email = ''
+    form.password = ''
+
+    justClose()
+    router.push('/dashboard')
+  } catch (error) {
+    if (error.response?.status === 401) {
+      generalError.value = 'Correo o contraseña incorrectos.'
+    } else if (error.response?.status === 400) {
+      generalError.value = 'Verifica los datos ingresados.'
+    } else if (error.response?.status === 404) {
+      generalError.value = 'No se encontró el servicio de autenticación.'
+    } else {
+      generalError.value = 'No se pudo iniciar sesión. Intenta nuevamente.'
+    }
+
+    console.error('Error al iniciar sesión:', error)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
