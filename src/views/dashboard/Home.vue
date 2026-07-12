@@ -155,7 +155,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Eye,
@@ -165,16 +165,19 @@ import {
   TrendingUp,
   ArrowDownRight
 } from 'lucide-vue-next'
+import { authService } from '../../services/authService'
+import { movementService } from '../../services/movementService'
 
 const router = useRouter()
 const showBalance = ref(true)
 
-const balanceData = {
-  total: 69795.75,
-  percentage: '+12.5%',
+// Configuración reactiva inicial
+const balanceData = ref({
+  total: 0.00,
+  percentage: '+100%',
   cardNumber: '•••• •••• •••• 4890',
-  cardExpiry: '12/26'
-}
+  cardExpiry: '12/29'
+})
 
 const quickActions = [
   {
@@ -191,76 +194,81 @@ const quickActions = [
   }
 ]
 
-const recentTransactions = [
-  {
-    id: 1,
-    description: 'Transferencia a María',
-    amount: -150.00,
-    date: '2026-04-10',
-    time: '14:30',
-    icon: Send,
-    iconBgColor: 'rgba(8, 95, 99, 0.2)',
-    iconColor: '#49beb7',
-    amountColor: '#0a9fa5'
-  },
-  {
-    id: 2,
-    description: 'Depósito - Salario',
-    amount: 2500.00,
-    date: '2026-04-09',
-    time: '08:00',
-    icon: ArrowDownRight,
-    iconBgColor: 'rgba(8, 95, 99, 0.2)',
-    iconColor: '#49beb7',
-    amountColor: '#49beb7'
-  },
-  {
-    id: 3,
-    description: 'Pago - Servicios',
-    amount: -89.50,
-    date: '2026-04-08',
-    time: '16:45',
-    icon: Send,
-    iconBgColor: 'rgba(73, 190, 183, 0.2)',
-    iconColor: '#0a9fa5',
-    amountColor: '#0a9fa5'
-  },
-  {
-    id: 4,
-    description: 'Transferencia recibida',
-    amount: 350.00,
-    date: '2026-04-07',
-    time: '11:20',
-    icon: ArrowDownRight,
-    iconBgColor: 'rgba(8, 95, 99, 0.2)',
-    iconColor: '#49beb7',
-    amountColor: '#49beb7'
-  }
-]
+const recentTransactions = ref([])
+const accounts = ref([])
 
-const accounts = [
-  {
-    id: 1,
-    name: 'Cuenta Corriente',
-    number: '0123-4567-89-1234567890',
-    balance: 15420.50
-  },
-  {
-    id: 2,
-    name: 'Cuenta de Ahorros',
-    number: '0123-4567-89-9876543210',
-    balance: 8750.25
-  },
-  {
-    id: 3,
-    name: 'Cuenta en Dólares',
-    number: '0123-4567-89-5555555555',
-    balance: 1250.00
+onMounted(async () => {
+  const currentUser = authService.getCurrentUser()
+  const realAccountNumber = currentUser?.account_number || '0123-4567-89-1234567890'
+  
+  // Inicializar cuenta con datos reales del usuario
+  accounts.value = [
+    {
+      id: '1',
+      name: 'Cuenta Corriente',
+      number: realAccountNumber,
+      balance: 0.00
+    }
+  ]
+
+  try {
+    const responseData = await movementService.getMovements()
+    const movementsArray = Array.isArray(responseData) ? responseData : (responseData?.data || [])
+
+    if (movementsArray.length > 0) {
+      // El saldo actual es la columna balance del movimiento más reciente (primer elemento)
+      const currentBalance = Number(movementsArray[0].balance)
+      balanceData.value.total = currentBalance
+      accounts.value[0].balance = currentBalance
+
+      // Mapeamos los primeros 4 movimientos de la API para mostrarlos en Inicio
+      recentTransactions.value = movementsArray.slice(0, 4).map((mov) => {
+        const realAmount = mov.amount * (mov.multiplier || 1)
+        const isIncoming = realAmount > 0
+        const dateObj = new Date(mov.created_at)
+
+        return {
+          id: mov.id,
+          description: mov.description || 'Transferencia',
+          amount: realAmount,
+          date: dateObj.toISOString().split('T')[0],
+          time: dateObj.toTimeString().substring(0, 5),
+          icon: isIncoming ? ArrowDownRight : Send,
+          iconBgColor: isIncoming ? 'rgba(8, 95, 99, 0.2)' : 'rgba(73, 190, 183, 0.2)',
+          iconColor: isIncoming ? '#49beb7' : '#0a9fa5',
+          amountColor: isIncoming ? '#49beb7' : '#0a9fa5'
+        }
+      })
+    } else {
+      balanceData.value.total = 0.00
+      accounts.value[0].balance = 0.00
+      recentTransactions.value = []
+    }
+  } catch (error) {
+    console.warn('Error al cargar movimientos en Inicio, usando datos locales de respaldo:', error)
+    
+    // Datos de respaldo con el bono de bienvenida
+    balanceData.value.total = 5000.00
+    accounts.value[0].balance = 5000.00
+    
+    recentTransactions.value = [
+      {
+        id: 1,
+        description: 'Bono de bienvenida',
+        amount: 5000.00,
+        date: new Date().toISOString().split('T')[0],
+        time: '12:00',
+        icon: ArrowDownRight,
+        iconBgColor: 'rgba(8, 95, 99, 0.2)',
+        iconColor: '#49beb7',
+        amountColor: '#49beb7'
+      }
+    ]
   }
-]
+})
 
 const formatCurrencyValue = (val) => {
-  return val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return typeof val === 'number' ? val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0.00'
 }
 
 const formatCurrency = (amount) => {

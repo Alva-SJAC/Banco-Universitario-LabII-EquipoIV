@@ -203,6 +203,8 @@ import {
 } from 'lucide-vue-next'
 import TransferReceiptModal from '../../components/dashboard/TransferReceiptModal.vue'
 import { movementService } from '../../services/movementService'
+import { authService } from '../../services/authService'
+import { jsPDF } from 'jspdf'
 
 const addToast = inject('addToast', () => {})
 
@@ -215,11 +217,12 @@ const selectedMovement = ref(null)
 const allMovements = ref([])
 const isLoading = ref(true)
 
+const currentUser = authService.getCurrentUser()
+const realLastDigits = currentUser?.account_number ? currentUser.account_number.slice(-4) : '1234'
+
 const accounts = [
   { id: 'all', name: 'Todas las cuentas' },
-  { id: '1', name: 'Cuenta Corriente - ****1234' },
-  { id: '2', name: 'Cuenta de Ahorros - ****5678' },
-  { id: '3', name: 'Cuenta en Dólares - ****9012' }
+  { id: '1', name: `Cuenta Corriente - ****${realLastDigits}` }
 ]
 
 // Cargar movimientos desde el backend al montar el componente
@@ -228,10 +231,11 @@ onMounted(async () => {
     isLoading.value = true
     
     // Intentar obtener los datos reales del servidor de Go
-    const data = await movementService.getMovements()
+    const responseData = await movementService.getMovements()
+    const movementsArray = Array.isArray(responseData) ? responseData : (responseData?.data || [])
     
     // Mapeamos la respuesta del backend de Go al formato visual del frontend
-    allMovements.value = data.map((mov) => {
+    allMovements.value = movementsArray.map((mov) => {
       const realAmount = mov.amount * (mov.multiplier || 1)
       const isIncoming = realAmount > 0
 
@@ -346,26 +350,91 @@ const handleCloseReceipt = () => {
 }
 
 const handleExport = () => {
-  addToast('Exportando historial de movimientos...', 'info')
-  
-  let content = `Historial de Movimientos - Banco Universitario\n`
-  content += `Generado el: ${new Date().toLocaleDateString()}\n`
-  content += `═══════════════════════════════════════════════════\n\n`
-  content += `Fecha\t\tHora\tDescripción\t\tMonto\n`
-  content += `───────────────────────────────────────────────────\n`
-  
-  filteredMovements.value.forEach(m => {
-    content += `${m.date}\t${m.time}\t${m.description.padEnd(20, ' ')}\tBs ${m.amount.toFixed(2)}\n`
-  })
-  
-  const blob = new Blob([content], { type: 'text/plain' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `movimientos-${selectedAccount.value}.txt`
-  link.click()
-  URL.revokeObjectURL(url)
-  
-  addToast('Reporte exportado exitosamente', 'success')
+  try {
+    addToast('Generando reporte de movimientos...', 'info')
+    
+    const doc = new jsPDF()
+    
+    // Encabezado
+    doc.setFillColor(26, 42, 56) // #1a2a38
+    doc.rect(0, 0, 210, 40, 'F')
+    
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(22)
+    doc.setFont('helvetica', 'bold')
+    doc.text('BANCO UNIVERSITARIO', 20, 25)
+    
+    // Título del reporte
+    doc.setTextColor(51, 65, 85) // Slate-700
+    doc.setFontSize(16)
+    doc.text('Reporte de Movimientos', 20, 55)
+    
+    doc.setFontSize(10)
+    doc.setTextColor(100, 116, 139)
+    doc.text(`Generado el: ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}`, 20, 62)
+    
+    // Línea divisoria
+    doc.setDrawColor(73, 190, 179) // #49beb7
+    doc.setLineWidth(1)
+    doc.line(20, 67, 190, 67)
+    
+    // Tabla Cabecera
+    let y = 77
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(51, 65, 85)
+    doc.text('Fecha', 20, y)
+    doc.text('Hora', 45, y)
+    doc.text('Descripción', 70, y)
+    doc.text('Monto', 160, y)
+    
+    doc.setDrawColor(226, 232, 240)
+    doc.setLineWidth(0.5)
+    doc.line(20, y + 3, 190, y + 3)
+    y += 11
+    
+    doc.setFont('helvetica', 'normal')
+    filteredMovements.value.forEach(m => {
+      // Verificar si nos pasamos de la página
+      if (y > 275) {
+        doc.addPage()
+        y = 25
+        
+        // Volver a pintar cabecera en nueva página
+        doc.setFont('helvetica', 'bold')
+        doc.text('Fecha', 20, y)
+        doc.text('Hora', 45, y)
+        doc.text('Descripción', 70, y)
+        doc.text('Monto', 160, y)
+        doc.line(20, y + 3, 190, y + 3)
+        y += 11
+        doc.setFont('helvetica', 'normal')
+      }
+      
+      doc.setTextColor(100, 116, 139)
+      doc.text(m.date, 20, y)
+      doc.text(m.time, 45, y)
+      
+      doc.setTextColor(51, 65, 85)
+      doc.text(m.description, 70, y)
+      
+      const isIncoming = m.amount > 0
+      // Color verde para ingresos, azul/rojo para egresos
+      if (isIncoming) {
+        doc.setTextColor(73, 190, 183) // #49beb7
+      } else {
+        doc.setTextColor(10, 159, 165) // #0a9fa5
+      }
+      const amtStr = isIncoming ? `+Bs ${m.amount.toFixed(2)}` : `-Bs ${Math.abs(m.amount).toFixed(2)}`
+      doc.text(amtStr, 160, y)
+      
+      y += 10
+    })
+    
+    doc.save(`movimientos-${selectedAccount.value}.pdf`)
+    addToast('Reporte exportado en PDF exitosamente', 'success')
+  } catch (error) {
+    console.error('Error al exportar reporte:', error)
+    addToast('Error al generar el reporte en PDF', 'error')
+  }
 }
 </script>

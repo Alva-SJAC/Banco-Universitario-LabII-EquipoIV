@@ -1,3 +1,4 @@
+
 <template>
   <Teleport to="body">
     <transition
@@ -20,7 +21,7 @@
           <!-- Close Button -->
           <button
             @click="close"
-            class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 border border-[#334155] focus:outline-none"
+            class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 border border-[#334155] focus:outline-none no-pdf-export no-print"
             style="background-color: #1e293b;"
           >
             <X :size="16" class="text-white" />
@@ -28,6 +29,7 @@
 
           <!-- Card Content -->
           <div
+            ref="receiptCard"
             class="border rounded-3xl shadow-2xl p-6 space-y-4"
             style="background-color: #1e293b; border-color: #334155;"
           >
@@ -124,10 +126,10 @@
             </div>
 
             <!-- Divider -->
-            <div style="border-top: 1px solid #334155;" />
+            <div class="no-pdf-export no-print" style="border-top: 1px solid #334155;" />
 
             <!-- Actions -->
-            <div class="space-y-2">
+            <div class="space-y-2 no-pdf-export no-print">
               <button
                 class="w-full flex items-center justify-center gap-2 hover:opacity-90 py-2.5 rounded-xl font-bold text-sm text-white focus:outline-none transition-colors border-0"
                 style="background-color: #49beb7;"
@@ -169,7 +171,7 @@
             </div>
 
             <!-- Bottom Close Button -->
-            <div class="pt-2">
+            <div class="pt-2 no-pdf-export no-print">
               <button
                 class="w-full py-2.5 rounded-xl font-semibold text-xs text-white focus:outline-none transition-colors hover:bg-slate-700"
                 style="border: 1px solid #334155; background-color: #1e293b;"
@@ -186,8 +188,10 @@
 </template>
 
 <script setup>
-import { inject } from 'vue'
+import { inject, ref } from 'vue'
 import { Download, Check, Share2, Printer, X } from 'lucide-vue-next'
+import html2canvas from 'html2canvas'
+import { jsPDF } from 'jspdf'
 
 const props = defineProps({
   isOpen: {
@@ -203,6 +207,7 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const addToast = inject('addToast', () => {})
+const receiptCard = ref(null)
 
 const close = () => {
   emit('close')
@@ -250,17 +255,43 @@ www.bancouniversitario.com
   `.trim()
 }
 
-const handleDownloadPDF = () => {
-  addToast('Comprobante descargado exitosamente', 'success')
-  
-  const content = generateReceiptContent()
-  const blob = new Blob([content], { type: 'text/plain' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `comprobante-${props.transferData.transactionId}.txt`
-  link.click()
-  URL.revokeObjectURL(url)
+const handleDownloadPDF = async () => {
+  addToast('Generando comprobante en PDF...', 'info')
+  try {
+    if (!receiptCard.value) {
+      addToast('Error al encontrar el comprobante', 'error')
+      return
+    }
+
+    const canvas = await html2canvas(receiptCard.value, {
+      backgroundColor: '#1e293b',
+      scale: 3, // Mayor calidad y nitidez
+      logging: false,
+      useCORS: true,
+      ignoreElements: (el) => el.classList.contains('no-pdf-export')
+    })
+
+    const imgData = canvas.toDataURL('image/png')
+    
+    // Convertir píxeles del canvas a milímetros para el tamaño exacto del PDF (1 px = 0.264583 mm)
+    // Dividimos por el 'scale' utilizado en html2canvas (3) para obtener la dimensión original
+    const imgWidth = (canvas.width * 0.264583) / 3
+    const imgHeight = (canvas.height * 0.264583) / 3
+    
+    // Crear el PDF con el tamaño EXACTO del comprobante
+    const pdf = new jsPDF({
+      orientation: imgWidth > imgHeight ? 'l' : 'p',
+      unit: 'mm',
+      format: [imgWidth, imgHeight]
+    })
+    
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+    pdf.save(`comprobante-${props.transferData.transactionId}.pdf`)
+    addToast('Comprobante PDF descargado exitosamente', 'success')
+  } catch (error) {
+    console.error('Error al generar PDF:', error)
+    addToast('Error al generar el PDF del comprobante', 'error')
+  }
 }
 
 const handlePrint = () => {
@@ -295,3 +326,15 @@ const handleShare = async () => {
   }
 }
 </script>
+
+<style scoped>
+@media print {
+  /* Ocultar botones y elementos de acción al imprimir */
+  .no-print {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+</style>
