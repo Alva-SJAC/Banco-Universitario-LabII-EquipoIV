@@ -127,9 +127,10 @@
               >
                 <Bell :size="20" />
                 <span
+                  v-if="notifications.filter(n => n.unread).length > 0"
                   class="absolute top-1 right-1 w-5 h-5 flex items-center justify-center p-0 text-[10px] border-0 font-bold rounded-full text-white bg-blue-600"
                 >
-                  3
+                  {{ notifications.filter(n => n.unread).length }}
                 </span>
               </button>
 
@@ -282,6 +283,8 @@ import {
   CreditCard,
   Settings
 } from 'lucide-vue-next'
+import { authService } from '../../services/authService'
+import { movementService } from '../../services/movementService'
 
 const router = useRouter()
 const route = useRoute()
@@ -297,32 +300,7 @@ const user = ref({
   accountNumber: '****1234'
 })
 
-const notifications = ref([
-  {
-    id: 1,
-    title: 'Transferencia recibida',
-    message: 'Has recibido Bs 500.00 de María González',
-    time: 'Hace 5 min',
-    unread: true,
-    type: 'success'
-  },
-  {
-    id: 2,
-    title: 'Transferencia realizada',
-    message: 'Tu transferencia a Carlos Rodríguez fue exitosa',
-    time: 'Hace 2 horas',
-    unread: true,
-    type: 'info'
-  },
-  {
-    id: 3,
-    title: 'Nuevo movimiento',
-    message: 'Se registró un nuevo débito en tu cuenta corriente',
-    time: 'Hace 1 día',
-    unread: true,
-    type: 'warning'
-  }
-])
+const notifications = ref([])
 
 const menuItems = [
   { icon: Home, label: 'Inicio', path: '/dashboard' },
@@ -361,7 +339,15 @@ const PAGE_META = {
 }
 
 const currentMeta = computed(() => {
-  return PAGE_META[route.path] || PAGE_META['/dashboard']
+  const meta = PAGE_META[route.path] || PAGE_META['/dashboard']
+  if (route.path === '/dashboard') {
+    const name = user.value.name !== 'Juan Pérez' ? user.value.name : 'Juan Pérez'
+    return {
+      title: `Bienvenido, ${name}`,
+      subtitle: meta.subtitle
+    }
+  }
+  return meta
 })
 
 const isActive = (path) => {
@@ -403,8 +389,69 @@ const handleClickOutside = (event) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('mousedown', handleClickOutside)
+
+  // Cargar información real del usuario logueado
+  const currentUser = authService.getCurrentUser()
+  if (currentUser) {
+    user.value = {
+      name: `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || 'Usuario',
+      email: currentUser.email || '',
+      avatar: currentUser.first_name ? (currentUser.first_name.charAt(0) + (currentUser.last_name ? currentUser.last_name.charAt(0) : '')).toUpperCase() : 'U',
+      accountNumber: currentUser.account_number ? `****${currentUser.account_number.slice(-4)}` : '****1234'
+    }
+  }
+
+  // Cargar transacciones recientes para las notificaciones
+  try {
+    const responseData = await movementService.getMovements()
+    const movementsArray = Array.isArray(responseData) ? responseData : (responseData?.data || [])
+
+    if (movementsArray.length > 0) {
+      notifications.value = movementsArray.slice(0, 5).map((mov, idx) => {
+        const realAmount = mov.amount * (mov.multiplier || 1)
+        const isIncoming = realAmount > 0
+        const dateObj = new Date(mov.created_at)
+
+        // Calcular tiempo relativo simple
+        const diffMs = new Date() - dateObj
+        const diffMins = Math.floor(diffMs / 60000)
+        let timeStr = 'Hace un momento'
+        if (diffMins > 0 && diffMins < 60) {
+          timeStr = `Hace ${diffMins} min`
+        } else if (diffMins >= 60 && diffMins < 1440) {
+          timeStr = `Hace ${Math.floor(diffMins / 60)} horas`
+        } else if (diffMins >= 1440) {
+          timeStr = `Hace ${Math.floor(diffMins / 1440)} días`
+        }
+
+        return {
+          id: mov.id || idx,
+          title: isIncoming ? 'Transferencia recibida' : 'Transferencia realizada',
+          message: `${mov.description || 'Bono de bienvenida'} por Bs ${Math.abs(realAmount).toFixed(2)}`,
+          time: timeStr,
+          unread: idx === 0, // marcar la más reciente como no leída
+          type: isIncoming ? 'success' : 'info'
+        }
+      })
+    } else {
+      notifications.value = []
+    }
+  } catch (error) {
+    console.warn('Error al cargar notificaciones dinámicas:', error)
+    // Respaldo por defecto
+    notifications.value = [
+      {
+        id: 1,
+        title: 'Bono de bienvenida',
+        message: 'Has recibido Bs 5.000,00 de regalo de bienvenida',
+        time: 'Hace un momento',
+        unread: true,
+        type: 'success'
+      }
+    ]
+  }
 })
 
 onUnmounted(() => {

@@ -300,7 +300,7 @@ const handleSubmit = async () => {
       data?.data?.user ||
       data?.data?.usuario ||
       data?.data?.client ||
-      data?.data
+      data?.data ||
       null
 
     if (!token) {

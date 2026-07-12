@@ -22,16 +22,18 @@ export const authService = {
   logout() {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user_data')
+    localStorage.removeItem('bu_token')
+    localStorage.removeItem('bu_user')
   },
 
   // Obtener datos del usuario logueado
   getCurrentUser() {
-    const userJson = localStorage.getItem('user_data')
+    const userJson = localStorage.getItem('bu_user') || localStorage.getItem('user_data')
     return userJson ? JSON.parse(userJson) : null
   },
 
   // Validar si la sesión sigue activa
   isAuthenticated() {
-    return !!localStorage.getItem('auth_token')
+    return !!(localStorage.getItem('bu_token') || localStorage.getItem('auth_token'))
   }
 }
