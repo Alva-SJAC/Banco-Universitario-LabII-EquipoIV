@@ -147,8 +147,9 @@ onMounted(() => {
 const handleTransfer = async () => {
   errorMessage.value = ''
   
-  if (!transferForm.value.toAccount || transferForm.value.toAccount.length < 20) {
-    errorMessage.value = 'El número de cuenta destino es inválido (20 dígitos)'
+  const cleanAccount = transferForm.value.toAccount ? transferForm.value.toAccount.replace(/\D/g, '') : ''
+  if (!cleanAccount || cleanAccount.length !== 20) {
+    errorMessage.value = 'El número de cuenta destino debe contener 20 dígitos'
     return
   }
 

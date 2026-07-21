@@ -214,7 +214,9 @@ const close = () => {
 }
 
 const formatCurrencyValue = (val) => {
-  return val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  if (val === undefined || val === null) return '0.00'
+  const num = typeof val === 'number' ? val : parseFloat(val) || 0
+  return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
 
 const generateReceiptContent = () => {
