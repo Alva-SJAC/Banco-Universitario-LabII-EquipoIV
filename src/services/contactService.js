@@ -2,8 +2,8 @@ import api from './api'
 
 export const contactService = {
   async getContacts(alias = '') {
-    const query = alias ? `?alias=${encodeURIComponent(alias)}` : ''
-    const response = await api.get(`/v1/client/contact${query}`)
+    const params = alias ? { alias } : {}
+    const response = await api.get('/v1/client/contact', { params })
     return response.data
   },
 
