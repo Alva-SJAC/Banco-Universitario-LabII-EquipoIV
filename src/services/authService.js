@@ -32,6 +32,17 @@ export const authService = {
     return userJson ? JSON.parse(userJson) : null
   },
 
+  // Actualizar datos del usuario activo en el almacenamiento local
+  updateCurrentUser(updatedFields) {
+    const currentUser = this.getCurrentUser() || {}
+    const newUser = { ...currentUser, ...updatedFields }
+    
+    const userKey = localStorage.getItem('bu_user') ? 'bu_user' : 'user_data'
+    localStorage.setItem(userKey, JSON.stringify(newUser))
+    
+    return newUser
+  },
+
   // Validar si la sesión sigue activa
   isAuthenticated() {
     return !!(localStorage.getItem('bu_token') || localStorage.getItem('auth_token'))
