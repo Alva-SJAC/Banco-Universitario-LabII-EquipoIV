@@ -52,7 +52,7 @@
         <div class="pt-4 border-t border-[#1a2a38]/30 space-y-1">
           <button
             class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 hover:bg-[#1a2a38] transition-colors focus:outline-none"
-            @click="navigate('/dashboard/profile')"
+            @click="navigate('/dashboard/settings')"
           >
             <Settings :size="17" class="flex-shrink-0" />
             <span class="text-xs truncate font-medium">Configuración</span>
@@ -198,10 +198,10 @@
               </transition>
             </div>
 
-            <!-- Profile Info dropdown trigger -->
+            <!-- Settings Info dropdown trigger -->
             <div
               class="hidden lg:flex items-center gap-3 ml-4 pl-4 border-l border-[#1a2a38]/30 min-w-0 cursor-pointer group"
-              @click="navigate('/dashboard/profile')"
+              @click="navigate('/dashboard/settings')"
             >
               <div
                 class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm bg-bu-teal shadow-md shadow-bu-teal/20"
@@ -308,7 +308,7 @@ const menuItems = [
   { icon: TrendingUp, label: 'Movimientos', path: '/dashboard/movements' },
   { icon: CreditCard, label: 'Tarjetas', path: '/dashboard/cards' },
   { icon: Users, label: 'Contactos', path: '/dashboard/contacts' },
-  { icon: User, label: 'Perfil', path: '/dashboard/profile' }
+  { icon: User, label: 'Configuración', path: '/dashboard/settings' }
 ]
 
 const PAGE_META = {
@@ -332,9 +332,9 @@ const PAGE_META = {
     title: 'Contactos Frecuentes',
     subtitle: 'Gestiona tus contactos para transferencias'
   },
-  '/dashboard/profile': {
-    title: 'Mi Perfil',
-    subtitle: 'Gestiona tu información personal y seguridad'
+  '/dashboard/settings': {
+    title: 'Configuración',
+    subtitle: 'Gestiona tu información personal, seguridad y preferencias'
   }
 }
 
