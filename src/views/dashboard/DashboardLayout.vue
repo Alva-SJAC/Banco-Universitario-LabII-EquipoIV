@@ -52,7 +52,7 @@
         <div class="pt-4 border-t border-[#1a2a38]/30 space-y-1">
           <button
             class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 hover:bg-[#1a2a38] transition-colors focus:outline-none"
-            @click="navigate('/dashboard/profile')"
+            @click="navigate('/dashboard/settings')"
           >
             <Settings :size="17" class="flex-shrink-0" />
             <span class="text-xs truncate font-medium">Configuración</span>
@@ -198,10 +198,10 @@
               </transition>
             </div>
 
-            <!-- Profile Info dropdown trigger -->
+            <!-- Settings Info dropdown trigger -->
             <div
               class="hidden lg:flex items-center gap-3 ml-4 pl-4 border-l border-[#1a2a38]/30 min-w-0 cursor-pointer group"
-              @click="navigate('/dashboard/profile')"
+              @click="navigate('/dashboard/settings')"
             >
               <div
                 class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm bg-bu-teal shadow-md shadow-bu-teal/20"
@@ -294,10 +294,10 @@ const notificationsOpen = ref(false)
 const notificationsContainer = ref(null)
 
 const user = ref({
-  name: 'Juan Pérez',
-  email: 'juan.perez@universidad.edu',
-  avatar: 'JP',
-  accountNumber: '****1234'
+  name: '',
+  email: '',
+  avatar: 'U',
+  accountNumber: '****'
 })
 
 const notifications = ref([])
@@ -308,12 +308,11 @@ const menuItems = [
   { icon: TrendingUp, label: 'Movimientos', path: '/dashboard/movements' },
   { icon: CreditCard, label: 'Tarjetas', path: '/dashboard/cards' },
   { icon: Users, label: 'Contactos', path: '/dashboard/contacts' },
-  { icon: User, label: 'Perfil', path: '/dashboard/profile' }
 ]
 
 const PAGE_META = {
   '/dashboard': {
-    title: 'Bienvenido, Juan Pérez',
+    title: 'Bienvenido',
     subtitle: 'Aquí está el resumen de tus cuentas'
   },
   '/dashboard/transfers': {
@@ -332,18 +331,17 @@ const PAGE_META = {
     title: 'Contactos Frecuentes',
     subtitle: 'Gestiona tus contactos para transferencias'
   },
-  '/dashboard/profile': {
-    title: 'Mi Perfil',
-    subtitle: 'Gestiona tu información personal y seguridad'
+  '/dashboard/settings': {
+    title: 'Configuración',
+    subtitle: 'Gestiona tu información personal, seguridad y preferencias'
   }
 }
 
 const currentMeta = computed(() => {
   const meta = PAGE_META[route.path] || PAGE_META['/dashboard']
   if (route.path === '/dashboard') {
-    const name = user.value.name !== 'Juan Pérez' ? user.value.name : 'Juan Pérez'
     return {
-      title: `Bienvenido, ${name}`,
+      title: user.value.name ? `Bienvenido, ${user.value.name}` : 'Bienvenido',
       subtitle: meta.subtitle
     }
   }
@@ -362,7 +360,46 @@ const navigate = (path) => {
   sidebarOpen.value = false
 }
 
+const loadUserData = () => {
+  const rawUser = authService.getCurrentUser() || {}
+  const currentUser = rawUser.user ? { ...rawUser, ...rawUser.user } : rawUser
+
+  const userId = currentUser.id || currentUser.email || 'default'
+  
+  let override = {}
+  try {
+    override = JSON.parse(localStorage.getItem(`bu_override_${userId}`) || '{}')
+  } catch (e) {
+    override = {}
+  }
+
+  const displayName = override.name || 
+                      currentUser.name || 
+                      currentUser.full_name || 
+                      currentUser.nombre || 
+                      `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || 
+                      'Usuario'
+
+  const initials = displayName !== 'Usuario'
+    ? displayName.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'U'
+
+  user.value = {
+    name: displayName,
+    email: currentUser.email || '',
+    avatar: initials,
+    accountNumber: currentUser.account_number ? `****${currentUser.account_number.slice(-4)}` : '****'
+  }
+}
+
 const handleLogout = () => {
+  authService.logout()
+  user.value = {
+    name: '',
+    email: '',
+    avatar: 'U',
+    accountNumber: '****'
+  }
   router.push('/')
 }
 
@@ -392,16 +429,11 @@ const handleClickOutside = (event) => {
 onMounted(async () => {
   document.addEventListener('mousedown', handleClickOutside)
 
-  // Cargar información real del usuario logueado
-  const currentUser = authService.getCurrentUser()
-  if (currentUser) {
-    user.value = {
-      name: `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || 'Usuario',
-      email: currentUser.email || '',
-      avatar: currentUser.first_name ? (currentUser.first_name.charAt(0) + (currentUser.last_name ? currentUser.last_name.charAt(0) : '')).toUpperCase() : 'U',
-      accountNumber: currentUser.account_number ? `****${currentUser.account_number.slice(-4)}` : '****1234'
-    }
-  }
+  // Escuchar cuando se guarde en PersonalInfoTab.vue
+  window.addEventListener('bu_profile_updated', loadUserData)
+
+  // Cargar usuario inicialmente
+  loadUserData()
 
   // Cargar transacciones recientes para las notificaciones
   try {
@@ -431,7 +463,7 @@ onMounted(async () => {
           title: isIncoming ? 'Transferencia recibida' : 'Transferencia realizada',
           message: `${mov.description || 'Bono de bienvenida'} por Bs ${Math.abs(realAmount).toFixed(2)}`,
           time: timeStr,
-          unread: idx === 0, // marcar la más reciente como no leída
+          unread: idx === 0,
           type: isIncoming ? 'success' : 'info'
         }
       })
@@ -440,7 +472,6 @@ onMounted(async () => {
     }
   } catch (error) {
     console.warn('Error al cargar notificaciones dinámicas:', error)
-    // Respaldo por defecto
     notifications.value = [
       {
         id: 1,
@@ -456,6 +487,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('mousedown', handleClickOutside)
+  window.removeEventListener('bu_profile_updated', loadUserData)
 })
 </script>
 

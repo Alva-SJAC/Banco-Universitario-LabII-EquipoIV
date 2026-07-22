@@ -10,7 +10,7 @@ import Movements from '../views/dashboard/Movements.vue'
 import Transfers from '../views/dashboard/Transfers.vue'
 import Cards from '../views/dashboard/Cards.vue'
 import Contacts from '../views/dashboard/Contacts.vue'
-import Profile from '../views/dashboard/Profile.vue'
+import Settings from '../views/dashboard/Settings.vue' // 👈 Importación estática relativa directa
 
 const routes = [
   {
@@ -30,7 +30,6 @@ const routes = [
   },
   {
     path: '/dashboard',
-    name: 'Dashboard',
     component: DashboardLayout,
     meta: {
       requiresAuth: true
@@ -62,9 +61,9 @@ const routes = [
         component: Contacts
       },
       {
-        path: 'profile',
-        name: 'Profile',
-        component: Profile
+        path: 'settings',
+        name: 'Settings',
+        component: Settings
       }
     ]
   }
