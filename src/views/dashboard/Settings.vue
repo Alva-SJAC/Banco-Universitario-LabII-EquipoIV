@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, onUnmounted, inject } from 'vue'
 import { User, ShieldCheck, Bell, Camera } from 'lucide-vue-next'
 import PersonalInfoTab from '../../components/settings/PersonalInfoTab.vue'
 import SecurityTab from '../../components/settings/SecurityTab.vue'
@@ -107,7 +107,7 @@ const userData = ref({})
 
 const userAvatar = computed(() => {
   const name = userData.value.name || 'Juan Pérez'
-  const parts = name.trim().split(' ')
+  const parts = name.trim().split(' ').filter(Boolean)
   if (parts.length >= 2) {
     return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase()
   }
@@ -115,38 +115,52 @@ const userAvatar = computed(() => {
 })
 
 const loadUserData = () => {
-  const current = authService.getCurrentUser() || {}
-  const fullName = current.name || (current.first_name ? `${current.first_name} ${current.last_name || ''}`.trim() : 'Juan Pérez')
+  const rawUser = authService.getCurrentUser() || {}
+  const currentUser = rawUser.user ? { ...rawUser, ...rawUser.user } : rawUser
+
+  // Obtener el ID para buscar el override específico
+  const userId = currentUser.id || currentUser.email || 'default'
+
+  let override = {}
+  try {
+    override = JSON.parse(
+      localStorage.getItem(`bu_override_${userId}`) || 
+      localStorage.getItem('bu_profile_override') || 
+      '{}'
+    )
+  } catch (e) {
+    override = {}
+  }
+
+  // Nombre formateado con fallback a first_name + last_name
+  const calculatedName = currentUser.name || 
+                         currentUser.full_name || 
+                         currentUser.nombre || 
+                         `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim()
+
+  const fullName = override.name || calculatedName || 'Juan Pérez'
 
   userData.value = {
     name: fullName,
-    email: current.email || 'juan.perez@universidad.edu',
-    document_number: current.document_number || 'V-12345678',
-    phone_number: current.phone_number || '+58 414-1234567',
-    birth_date: current.birth_date ? current.birth_date.split('T')[0] : '1995-05-15',
-    address: current.address || 'Av. Principal, Caracas, Venezuela'
+    email: currentUser.email || 'rober@prueba.com',
+    document_number: override.cedula || currentUser.document_number || currentUser.cedula || 'V-12345678',
+    phone_number: override.phone || currentUser.phone_number || currentUser.phone || '+58 414-1234567',
+    birth_date: currentUser.birth_date ? String(currentUser.birth_date).split('T')[0] : '1995-05-15',
+    address: override.address !== undefined ? override.address : (currentUser.address || currentUser.direccion || 'Av. Principal')
   }
 }
 
 onMounted(() => {
   loadUserData()
+  // Escuchar evento global cuando se actualiza la info personal
+  window.addEventListener('bu_profile_updated', loadUserData)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('bu_profile_updated', loadUserData)
 })
 
 const handleUserUpdate = (updatedData) => {
-  const nameParts = (updatedData.name || '').trim().split(' ')
-  const firstName = nameParts[0] || ''
-  const lastName = nameParts.slice(1).join(' ') || ''
-
-  authService.updateCurrentUser({
-    first_name: firstName,
-    last_name: lastName,
-    name: updatedData.name,
-    email: updatedData.email,
-    phone_number: updatedData.phone_number,
-    address: updatedData.address
-  })
-
-  userData.value = { ...userData.value, ...updatedData }
-  addToast('Perfil actualizado exitosamente', 'success')
+  loadUserData()
 }
 </script>
