@@ -12,7 +12,7 @@
       <div
         v-if="isOpen"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
-        @click="close"
+        @click.self="close"
       >
         <div
           class="relative max-w-lg w-full max-h-[90vh] overflow-y-auto rounded-3xl"
@@ -20,7 +20,8 @@
         >
           <!-- Close Button -->
           <button
-            @click="close"
+            type="button"
+            @click.stop="close"
             class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 border border-[#334155] focus:outline-none no-pdf-export no-print"
             style="background-color: #1e293b;"
           >
@@ -131,9 +132,10 @@
             <!-- Actions -->
             <div class="space-y-2 no-pdf-export no-print">
               <button
+                type="button"
                 class="w-full flex items-center justify-center gap-2 hover:opacity-90 py-2.5 rounded-xl font-bold text-sm text-white focus:outline-none transition-colors border-0"
                 style="background-color: #49beb7;"
-                @click="handleDownloadPDF"
+                @click.stop="handleDownloadPDF"
               >
                 <Download :size="16" />
                 Descargar PDF
@@ -141,18 +143,20 @@
 
               <div class="grid grid-cols-2 gap-2">
                 <button
+                  type="button"
                   class="flex items-center justify-center gap-1.5 hover:bg-slate-700 py-2 rounded-xl text-xs font-semibold text-white focus:outline-none transition-colors"
                   style="border: 1px solid #334155; background-color: transparent;"
-                  @click="handlePrint"
+                  @click.stop="handlePrint"
                 >
                   <Printer :size="16" />
                   Imprimir
                 </button>
 
                 <button
+                  type="button"
                   class="flex items-center justify-center gap-1.5 hover:bg-slate-700 py-2 rounded-xl text-xs font-semibold text-white focus:outline-none transition-colors"
                   style="border: 1px solid #334155; background-color: transparent;"
-                  @click="handleShare"
+                  @click.stop="handleShare"
                 >
                   <Share2 :size="16" />
                   Compartir
@@ -173,9 +177,10 @@
             <!-- Bottom Close Button -->
             <div class="pt-2 no-pdf-export no-print">
               <button
+                type="button"
                 class="w-full py-2.5 rounded-xl font-semibold text-xs text-white focus:outline-none transition-colors hover:bg-slate-700"
                 style="border: 1px solid #334155; background-color: #1e293b;"
-                @click="close"
+                @click.stop="close"
               >
                 Cerrar y volver
               </button>
@@ -214,7 +219,9 @@ const close = () => {
 }
 
 const formatCurrencyValue = (val) => {
-  return val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  if (val === undefined || val === null) return '0.00'
+  const num = typeof val === 'number' ? val : parseFloat(val) || 0
+  return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
 
 const generateReceiptContent = () => {
