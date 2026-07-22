@@ -50,12 +50,14 @@
               <span class="text-slate-400 font-bold">Bs</span>
             </div>
             <input
-              v-model.number="transferForm.amount"
-              type="number"
-              step="0.01"
-              min="0.01"
+              v-model="displayAmount"
+              @input="handleAmountInput"
+              @blur="handleAmountBlur"
+              @focus="handleAmountFocus"
+              type="text"
+              inputmode="decimal"
               class="w-full rounded-xl border border-[#2a3a48] bg-[#132333] pl-11 pr-4 py-3.5 text-lg font-semibold text-white placeholder-slate-500 outline-none focus:border-[#49beb7] focus:ring-1 focus:ring-[#49beb7] transition-all"
-              placeholder="0.00"
+              placeholder="0,00"
               :disabled="isLoading"
               required
             />
@@ -132,6 +134,45 @@ const transferForm = ref({
   description: ''
 })
 
+const displayAmount = ref('')
+
+const handleAmountInput = (e) => {
+  let val = e.target.value
+
+  // Normalizar puntos a comas para mantener estándar latino/venezolano
+  val = val.replace(/\./g, ',')
+
+  // Permitir solo una coma decimal
+  const parts = val.split(',')
+  if (parts.length > 2) {
+    val = parts[0] + ',' + parts.slice(1).join('')
+  }
+
+  // Filtrar caracteres no válidos
+  val = val.replace(/[^0-9,]/g, '')
+  displayAmount.value = val
+
+  // Parsear a número decimal válido para transferForm.amount
+  const cleanNumStr = val.replace(',', '.')
+  const num = parseFloat(cleanNumStr)
+  transferForm.value.amount = isNaN(num) || num <= 0 ? '' : num
+}
+
+const handleAmountBlur = () => {
+  if (transferForm.value.amount && transferForm.value.amount > 0) {
+    displayAmount.value = Number(transferForm.value.amount).toLocaleString('es-VE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+  }
+}
+
+const handleAmountFocus = () => {
+  if (transferForm.value.amount && transferForm.value.amount > 0) {
+    displayAmount.value = transferForm.value.amount.toString().replace('.', ',')
+  }
+}
+
 const isLoading = ref(false)
 const errorMessage = ref('')
 const showReceiptModal = ref(false)
@@ -187,6 +228,7 @@ const handleTransfer = async () => {
       amount: '',
       description: ''
     }
+    displayAmount.value = ''
     
     // Limpiar query params si existían
     if (route.query.account) {
@@ -209,3 +251,14 @@ const closeReceiptModal = () => {
   showReceiptModal.value = false
 }
 </script>
+
+<style scoped>
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>
