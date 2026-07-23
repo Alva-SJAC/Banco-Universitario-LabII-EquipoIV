@@ -38,6 +38,24 @@ export const authService = {
     return response.data
   },
 
+  // Solicitar código de recuperación de contraseña
+  async forgotPassword(email) {
+    const response = await api.post('/v1/public/client/user/forgot-password', { email })
+    return response.data
+  },
+
+  // Restablecer contraseña usando código enviado por correo
+  async resetPassword(email, code, newPassword) {
+    const payload = {
+      email,
+      code,
+      new_password: newPassword
+    }
+
+    const response = await api.post('/v1/public/client/user/reset-password', payload)
+    return response.data
+  },
+
   // Cerrar sesión activa
   logout() {
     localStorage.removeItem('auth_token')

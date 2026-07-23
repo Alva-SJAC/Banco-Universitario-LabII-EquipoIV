@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/public/Home.vue'
 import RegisterPage from '../views/auth/RegisterPage.vue'
 import ForgotPasswordPage from '../views/auth/ForgotPasswordPage.vue'
+import ResetPasswordPage from '../views/auth/ResetPasswordPage.vue'
 
 import DashboardLayout from '../views/dashboard/DashboardLayout.vue'
 import DashboardHome from '../views/dashboard/Home.vue'
@@ -26,6 +27,11 @@ const routes = [
     path: '/recuperar-contrasena',
     name: 'ForgotPassword',
     component: ForgotPasswordPage
+  },
+  {
+    path: '/restablecer-contrasena',
+    name: 'ResetPassword',
+    component: ResetPasswordPage
   },
   {
     path: '/dashboard',
