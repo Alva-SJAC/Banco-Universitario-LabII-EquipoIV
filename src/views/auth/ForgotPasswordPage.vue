@@ -19,7 +19,7 @@
         </h1>
 
         <p class="text-white/90 text-sm leading-relaxed max-w-xs mx-auto">
-          Ingresa tu correo electrónico para visualizar el flujo de recuperación de credenciales.
+          Ingresa tu correo electrónico para recibir el código de recuperación y restablecer tu contraseña.
         </p>
       </div>
 
@@ -47,17 +47,28 @@
             <p v-if="error" class="text-red-500 text-xs mt-2">
               {{ error }}
             </p>
+            <p v-if="successMessage" class="text-green-600 text-sm mt-2">
+              {{ successMessage }}
+            </p>
           </div>
 
           <button
             type="submit"
-            class="w-full bg-bu-teal text-white rounded-xl py-4 font-bold shadow-lg shadow-bu-teal/20 hover:bg-bu-teal-dark transition-all flex items-center justify-center gap-2"
+            :disabled="isLoading"
+            class="w-full bg-bu-teal text-white rounded-xl py-4 font-bold shadow-lg shadow-bu-teal/20 hover:bg-bu-teal-dark transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Enviar instrucciones
+            {{ isLoading ? 'Enviando...' : 'Enviar instrucciones' }}
             <ArrowRight :size="18" />
           </button>
 
           <div class="space-y-3 pt-1">
+            <RouterLink
+              to="/restablecer-contrasena"
+              class="block w-full text-center text-sm text-bu-teal hover:text-bu-teal-dark font-semibold bg-transparent border-0 p-0"
+            >
+              Ya tengo código, restablecer contraseña
+            </RouterLink>
+
             <button
               type="button"
               class="block w-full text-center text-sm text-bu-teal hover:text-bu-teal-dark font-semibold bg-transparent border-0 p-0"
@@ -92,19 +103,38 @@ import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ArrowRight, Mail } from 'lucide-vue-next'
 import AuthModal from '../../components/auth/AuthModal.vue'
+import { authService } from '../../services/authService'
 
 const email = ref('')
 const error = ref('')
+const successMessage = ref('')
+const isLoading = ref(false)
 const isAuthModalOpen = ref(false)
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   error.value = ''
+  successMessage.value = ''
 
   if (!email.value) {
     error.value = 'El correo electrónico es obligatorio.'
     return
   }
 
-  alert('Formulario visual de recuperación de contraseña.')
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)
+  if (!isValidEmail) {
+    error.value = 'Ingresa un correo electrónico válido.'
+    return
+  }
+
+  try {
+    isLoading.value = true
+    await authService.forgotPassword(email.value)
+    successMessage.value = 'Si el correo existe en el sistema, recibirás un código para restablecer tu contraseña.'
+  } catch (err) {
+    error.value = err?.response?.data?.message || 'No se pudo enviar el correo de recuperación. Intenta nuevamente.'
+    console.error('Error sending recovery email:', err)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
