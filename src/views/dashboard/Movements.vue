@@ -105,15 +105,6 @@
       <!-- Buttons -->
       <div class="flex gap-3">
         <button
-          class="flex-1 flex items-center justify-center gap-2 hover:bg-[#1a2a38]/80 py-3 rounded-xl text-xs md:text-sm font-bold text-white focus:outline-none transition-colors"
-          style="border: 1px solid #2a3a48; background-color: transparent;"
-          @click="addToast('Filtros avanzados abiertos')"
-        >
-          <Filter :size="16" />
-          Más Filtros
-        </button>
-        
-        <button
           class="flex-1 flex items-center justify-center gap-2 hover:opacity-90 py-3 rounded-xl text-xs md:text-sm font-bold text-white focus:outline-none transition-colors border-none"
           style="background-color: #085f63;"
           @click="handleExport"
@@ -136,6 +127,7 @@
         <div
           v-for="movement in filteredMovements"
           :key="movement.id"
+          :id="`movement-${movement.id}`"
           class="rounded-2xl p-4 flex items-center justify-between border-none transition-all duration-300 hover:bg-[#1a2a38]/80 shadow-sm"
           style="background-color: #1a2a38;"
         >
@@ -176,6 +168,18 @@
           </div>
         </div>
       </div>
+
+      <div class="mt-6">
+        <Pagination
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          :page-size="pageSize"
+          :page-sizes="pageSizes"
+          :total-items="totalItemsCount"
+          @update:currentPage="setPage"
+          @update:pageSize="setPageSize"
+        />
+      </div>
     </div>
 
     <!-- Receipt Modal Component -->
@@ -189,19 +193,19 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, onMounted } from 'vue'
+import { ref, computed, inject, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
-  Send,
-  Wallet,
   Download,
-  Filter,
   FileText,
   ChevronDown
 } from 'lucide-vue-next'
 import TransferReceiptModal from '../../components/dashboard/TransferReceiptModal.vue'
+import Pagination from '../../components/ui/Pagination.vue'
+import { usePagination } from '../../composables/usePagination'
 import { movementService } from '../../services/movementService'
 import { authService } from '../../services/authService'
 import { jsPDF } from 'jspdf'
@@ -212,10 +216,27 @@ const selectedAccount = ref('all')
 const filterType = ref('all')
 const showReceiptModal = ref(false)
 const selectedMovement = ref(null)
+const route = useRoute()
 
 // Variables de estado para la API
 const allMovements = ref([])
 const isLoading = ref(true)
+const serverTotalCount = ref(0)
+
+const {
+  currentPage,
+  pageSize,
+  pageSizes,
+  totalPages,
+  totalItemsCount,
+  setPage,
+  setPageSize
+} = usePagination({
+  totalCount: serverTotalCount,
+  initialPage: 1,
+  initialPageSize: 10,
+  pageSizes: [10, 20, 50]
+})
 
 const currentUser = authService.getCurrentUser()
 const realLastDigits = currentUser?.account_number ? currentUser.account_number.slice(-4) : '1234'
@@ -227,19 +248,74 @@ const accounts = [
 
 // Cargar movimientos desde el backend al montar el componente
 onMounted(async () => {
+  await fetchMovements()
+
+  const queryMovementId = getMovementIdFromRoute()
+  if (queryMovementId) {
+    openMovementById(queryMovementId)
+  }
+})
+
+watch([currentPage, pageSize], () => {
+  fetchMovements()
+})
+
+watch(filterType, () => {
+  setPage(1)
+  fetchMovements()
+})
+
+const getMovementIdFromRoute = () => {
+  const rawId = route.query.movementId
+  if (!rawId) return null
+  return Array.isArray(rawId) ? rawId[0] : rawId
+}
+
+const openMovementById = (movementId) => {
+  if (!movementId) return
+  const targetMovement = allMovements.value.find(
+    (movement) => String(movement.id) === String(movementId)
+  )
+  if (!targetMovement) return
+  handleViewReceipt(targetMovement)
+}
+
+watch(
+  () => getMovementIdFromRoute(),
+  (movementId) => {
+    if (movementId) {
+      openMovementById(movementId)
+    }
+  }
+)
+
+const filteredMovements = computed(() => {
+  return allMovements.value.filter((movement) => {
+    if (selectedAccount.value !== 'all' && movement.accountId !== selectedAccount.value) {
+      return false
+    }
+    return true
+  })
+})
+
+const fetchMovements = async () => {
   try {
     isLoading.value = true
-    
-    // Intentar obtener los datos reales del servidor de Go
-    const responseData = await movementService.getMovements()
-    const movementsArray = Array.isArray(responseData) ? responseData : (responseData?.data || [])
-    
-    // Mapeamos la respuesta del backend de Go al formato visual del frontend
+    const multiplier = filterType.value === 'incoming'
+      ? 1
+      : filterType.value === 'outgoing'
+        ? -1
+        : undefined
+
+    const response = await movementService.getMovements(currentPage.value, pageSize.value, multiplier)
+    serverTotalCount.value = response.pagination?.totalCount || 0
+
+    const movementsArray = Array.isArray(response.data) ? response.data : []
+
     allMovements.value = movementsArray.map((mov) => {
       const realAmount = mov.amount * (mov.multiplier || 1)
       const isIncoming = realAmount > 0
 
-      // Formatear fecha y hora provenientes de created_at (ej: "2026-04-10T14:30:00Z")
       const dateObj = new Date(mov.created_at)
       const formattedDate = dateObj.toISOString().split('T')[0]
       const formattedTime = dateObj.toTimeString().substring(0, 5)
@@ -250,16 +326,16 @@ onMounted(async () => {
         amount: realAmount,
         date: formattedDate,
         time: formattedTime,
-        icon: isIncoming ? ArrowDownRight : Send,
-        iconBgColor: isIncoming ? 'rgba(8, 95, 99, 0.2)' : 'rgba(73, 190, 183, 0.2)',
-        iconColor: isIncoming ? '#49beb7' : '#0a9fa5',
-        amountColor: isIncoming ? '#49beb7' : '#0a9fa5',
+        icon: isIncoming ? ArrowDownRight : ArrowUpRight,
+        iconBgColor: isIncoming ? 'rgba(34, 197, 94, 0.12)' : 'rgba(248, 113, 113, 0.15)',
+        iconColor: isIncoming ? '#22c55e' : '#f87171',
+        amountColor: isIncoming ? '#22c55e' : '#f87171',
         accountId: mov.account_id || '1'
       }
     })
   } catch (error) {
     console.warn('Backend bloqueado (401) o desconectado. Cargando datos de simulación local para desarrollo.')
-    
+
     const mockData = [
       { id: 101, amount: 4500.00, multiplier: 1, created_at: '2026-06-24T10:15:00Z', description: 'Depósito de Nómina Universitaria', account_id: '1' },
       { id: 102, amount: 350.00, multiplier: -1, created_at: '2026-06-25T14:20:00Z', description: 'Pago de Servicios (Luz/Internet)', account_id: '1' },
@@ -272,35 +348,25 @@ onMounted(async () => {
       const realAmount = mov.amount * mov.multiplier
       const isIncoming = realAmount > 0
       const dateObj = new Date(mov.created_at)
-      
+
       return {
         id: mov.id,
         description: mov.description,
         amount: realAmount,
         date: dateObj.toISOString().split('T')[0],
         time: dateObj.toTimeString().substring(0, 5),
-        icon: isIncoming ? ArrowDownRight : Send,
-        iconBgColor: isIncoming ? 'rgba(8, 95, 99, 0.2)' : 'rgba(73, 190, 183, 0.2)',
-        iconColor: isIncoming ? '#49beb7' : '#0a9fa5',
-        amountColor: isIncoming ? '#49beb7' : '#0a9fa5',
+        icon: isIncoming ? ArrowDownRight : ArrowUpRight,
+        iconBgColor: isIncoming ? 'rgba(34, 197, 94, 0.12)' : 'rgba(248, 113, 113, 0.15)',
+        iconColor: isIncoming ? '#22c55e' : '#f87171',
+        amountColor: isIncoming ? '#22c55e' : '#f87171',
         accountId: mov.account_id
       }
     })
+    serverTotalCount.value = allMovements.value.length
   } finally {
     isLoading.value = false
   }
-})
-
-const filteredMovements = computed(() => {
-  return allMovements.value.filter((movement) => {
-    if (selectedAccount.value !== 'all' && movement.accountId !== selectedAccount.value) {
-      return false
-    }
-    if (filterType.value === 'incoming') return movement.amount > 0
-    if (filterType.value === 'outgoing') return movement.amount < 0
-    return true
-  })
-})
+}
 
 const formatCurrencyValue = (val) => {
   return val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
