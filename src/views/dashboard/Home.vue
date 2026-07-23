@@ -98,7 +98,8 @@
               <h3 class="text-white font-bold text-sm md:text-base mb-1">
                 {{ account.name }}
               </h3>
-              <p class="text-[10px] text-slate-400 mb-0 font-mono">
+              <!-- Tamaño aumentado a text-xs / md:text-sm y mejor contraste con text-slate-300 -->
+              <p class="text-xs md:text-sm text-slate-300 mb-0 font-mono tracking-wider font-medium break-all">
                 {{ account.number }}
               </p>
             </div>
@@ -163,7 +164,8 @@ import {
   CreditCard,
   Send,
   TrendingUp,
-  ArrowDownRight
+  ArrowDownRight,
+  ArrowUpRight
 } from 'lucide-vue-next'
 import { authService } from '../../services/authService'
 import { movementService } from '../../services/movementService'
@@ -221,7 +223,7 @@ onMounted(async () => {
       balanceData.value.total = currentBalance
       accounts.value[0].balance = currentBalance
 
-      // Mapeamos los primeros 4 movimientos de la API para mostrarlos en Inicio
+      // Mapeamos los primeros 4 movimientos coincidiendo exactamente con la paleta de Movements.vue
       recentTransactions.value = movementsArray.slice(0, 4).map((mov) => {
         const realAmount = mov.amount * (mov.multiplier || 1)
         const isIncoming = realAmount > 0
@@ -233,10 +235,10 @@ onMounted(async () => {
           amount: realAmount,
           date: dateObj.toISOString().split('T')[0],
           time: dateObj.toTimeString().substring(0, 5),
-          icon: isIncoming ? ArrowDownRight : Send,
-          iconBgColor: isIncoming ? 'rgba(8, 95, 99, 0.2)' : 'rgba(73, 190, 183, 0.2)',
-          iconColor: isIncoming ? '#49beb7' : '#0a9fa5',
-          amountColor: isIncoming ? '#49beb7' : '#0a9fa5'
+          icon: isIncoming ? ArrowDownRight : ArrowUpRight,
+          iconBgColor: isIncoming ? 'rgba(34, 197, 94, 0.12)' : 'rgba(248, 113, 113, 0.15)',
+          iconColor: isIncoming ? '#22c55e' : '#f87171',
+          amountColor: isIncoming ? '#22c55e' : '#f87171'
         }
       })
     } else {
@@ -247,7 +249,7 @@ onMounted(async () => {
   } catch (error) {
     console.warn('Error al cargar movimientos en Inicio, usando datos locales de respaldo:', error)
     
-    // Datos de respaldo con el bono de bienvenida
+    // Datos de respaldo en caso de error o backend offline
     balanceData.value.total = 5000.00
     accounts.value[0].balance = 5000.00
     
@@ -259,9 +261,9 @@ onMounted(async () => {
         date: new Date().toISOString().split('T')[0],
         time: '12:00',
         icon: ArrowDownRight,
-        iconBgColor: 'rgba(8, 95, 99, 0.2)',
-        iconColor: '#49beb7',
-        amountColor: '#49beb7'
+        iconBgColor: 'rgba(34, 197, 94, 0.12)',
+        iconColor: '#22c55e',
+        amountColor: '#22c55e'
       }
     ]
   }
