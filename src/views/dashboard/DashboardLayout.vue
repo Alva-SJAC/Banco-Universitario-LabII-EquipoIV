@@ -164,6 +164,7 @@
                       v-for="notification in notifications"
                       :key="notification.id"
                       class="px-4 py-3 border-b border-[#2a3a48]/40 hover:bg-[#0f1e2e]/50 cursor-pointer transition-colors"
+                      @click="handleNotificationClick(notification)"
                     >
                       <div class="flex items-start gap-3 min-w-0">
                         <div
@@ -280,7 +281,6 @@ import {
   X,
   Bell,
   ChevronDown,
-  CreditCard,
   Settings
 } from 'lucide-vue-next'
 import { authService } from '../../services/authService'
@@ -306,7 +306,6 @@ const menuItems = [
   { icon: Home, label: 'Inicio', path: '/dashboard' },
   { icon: Send, label: 'Transferencias', path: '/dashboard/transfers' },
   { icon: TrendingUp, label: 'Movimientos', path: '/dashboard/movements' },
-  { icon: CreditCard, label: 'Tarjetas', path: '/dashboard/cards' },
   { icon: Users, label: 'Contactos', path: '/dashboard/contacts' },
 ]
 
@@ -322,10 +321,6 @@ const PAGE_META = {
   '/dashboard/movements': {
     title: 'Movimientos',
     subtitle: 'Consulta el historial de tus transacciones'
-  },
-  '/dashboard/cards': {
-    title: 'Mis Tarjetas',
-    subtitle: 'Gestiona tus tarjetas de débito y crédito'
   },
   '/dashboard/contacts': {
     title: 'Contactos Frecuentes',
@@ -415,6 +410,19 @@ const addToast = (message, type = 'info') => {
   }, 4000)
 }
 
+const handleNotificationClick = (notification) => {
+  notificationsOpen.value = false
+  if (notification.unread) {
+    notification.unread = false
+  }
+
+  const movementId = notification.movementId || notification.id
+  router.push({
+    path: '/dashboard/movements',
+    query: { movementId: String(movementId) }
+  })
+}
+
 provide('addToast', addToast)
 
 const handleClickOutside = (event) => {
@@ -460,6 +468,7 @@ onMounted(async () => {
 
         return {
           id: mov.id || idx,
+          movementId: mov.id || idx,
           title: isIncoming ? 'Transferencia recibida' : 'Transferencia realizada',
           message: `${mov.description || 'Bono de bienvenida'} por Bs ${Math.abs(realAmount).toFixed(2)}`,
           time: timeStr,
